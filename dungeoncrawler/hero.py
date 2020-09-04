@@ -82,18 +82,16 @@ class Fighter(object):
         return self.mp / self.maxMP * 100
 
     def hp_bars(self):
-        bars = int(self.hp_ratio/100 * 15)
-        a = '█' * bars
-        b = "░" * (15 - bars)
-        return "%s%s%s%s" % (
-            utils.color_red, a, b, utils.color_reset)
+        bars = int(self.hp_ratio * 0.2)
+        a = '■' * bars
+        b = "." * (20 - bars)
+        return utils.color("".join((a, b)), "red")
 
     def mp_bars(self):
-        bars = int(self.mp_ratio/100 * 15)
-        a = '█' * bars
-        b = "░" * (15 - bars)
-        return "%s%s%s%s" % (
-            utils.color_blue, a, b, utils.color_reset)
+        bars = int(self.mp_ratio * 0.1)
+        a = '■' * bars
+        b = "." * (10 - bars)
+        return utils.color("".join((a, b)), "blue")
 
 
 class Hero(Fighter):
@@ -149,6 +147,7 @@ wizard_skills = [
     skills.NovaBlast(),
     skills.Focus(),
 ]
+
 HEROES.append(Hero('wizard', wizard_dict, wizard_skills))
 
 cleric_dict = {
@@ -231,7 +230,6 @@ beastmaster_skills = [skills.NatureWrath(),
                       skills.NightCall(),
                       skills.BloodMoon()]
 
-beastmaster_name = utils.color_yellow + "Beastmaster" + utils.color_reset
 MOBS.append(Mob('HellHoundA', hound_dict, hound_skills))
 MOBS.append(Mob('HellHoundB', hound_dict, hound_skills))
-MOBS.append(Mob(beastmaster_name, beastmaster_dict, beastmaster_skills))
+MOBS.append(Mob("Beastmaster", beastmaster_dict, beastmaster_skills))

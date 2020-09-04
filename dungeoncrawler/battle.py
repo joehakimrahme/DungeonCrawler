@@ -16,6 +16,7 @@ import random
 import re
 
 from dungeoncrawler import hero
+from dungeoncrawler import utils
 
 
 class BadComboInputError(Exception):
@@ -68,15 +69,19 @@ class Battle(object):
     def display_choice(self, choices):
         print("-------------\n")
         for i, h in enumerate(self.yourteam):
-            print(
-                "%d %-13s HP: %4d/%-4d %s - MP: %3d/%-3d %s, %s" %
-                (i + 1, h.name,
-                 h.hp, h.maxHP,
-                 h.hp_bars(),
-                 h.mp, h.maxMP,
-                 h.mp_bars(),
-                 choices[h.name])
-            )
+            if h.hp:
+                _c = choices[h.name]
+                if h.mp_ratio == 100:
+                    _c = utils.color(_c.name, 'bold')
+                print(
+                    "%d %-21s HP: %4d/%-4d %s - MP: %3d/%-3d %s, %s" %
+                    (i + 1, utils.color(h.name, 'bold'),
+                     h.hp, h.maxHP,
+                     h.hp_bars(),
+                     h.mp, h.maxMP,
+                     h.mp_bars(),
+                     _c)
+                )
         print('')
         for m in self.enemyteam:
             print(
@@ -113,7 +118,12 @@ class Battle(object):
     def execute_step(self, combo, choices):
         for h in combo:
             if h.hp:
+                if h in self.yourteam:
+                    print("\u001b[32m", end="")
+                else:
+                    print("\u001b[31m", end="")
                 choices[h.name].effect(self, h, combo)
+                print("\u001b[0m", end="")
             # execute end-of-step
             for mob in self.enemyteam:
                 if mob.hp == 0:

@@ -19,15 +19,22 @@ import time
 from dungeoncrawler import hero
 
 
-color_black = "\u001b[30m"
-color_red = "\u001b[31m"
-color_green = "\u001b[32m"
-color_yellow = "\u001b[33m"
-color_blue = "\u001b[34m"
-color_magenta = "\u001b[35m"
-color_cyan = "\u001b[36m"
-color_white = "\u001b[37m"
-color_reset = "\u001b[0m"
+def color(message, c):
+    colors = {
+        'black': "\u001b[30m",
+        'red': "\u001b[31m",
+        'green': "\u001b[32m",
+        'yellow': "\u001b[33m",
+        'blue': "\u001b[34m",
+        'magenta': "\u001b[35m",
+        'cyan': "\u001b[36m",
+        'white': "\u001b[37m",
+        'bold': "\u001b[1m",
+        'reset': "\u001b[0m",
+    }
+    if c in colors:
+        return colors[c] + message + colors['reset']
+    return message
 
 
 def slow_type(t):
@@ -36,7 +43,7 @@ def slow_type(t):
      taken from https://stackoverflow.com/q/4099422/403401
 
     """
-    typing_speed = 130
+    typing_speed = 150
     for letter in t:
         sys.stdout.write(letter)
         sys.stdout.flush()
