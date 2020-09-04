@@ -105,11 +105,11 @@ class HealTest(unittest.TestCase):
     @patch('dungeoncrawler.utils.slow_type')
     def test_Heal_effect(self, slow_type):
         world = mock.Mock()
-        world.allies = MagicMock(return_value=(self.fighters[1],))
+        world.yourteam = self.fighters
 
         self.fighters[1].hp -= 10
         self.ability.effect(
-            world, self.fighters[0], self.fighters)
+            world, self.fighters[0], self.fighters[1:])
 
         self.assertEqual(self.fighters[0].mp, 0,
                          "healer didn't use mp: %s" % self.fighters[0].mp)

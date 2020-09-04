@@ -138,7 +138,7 @@ HEROES.append(Hero('wizard', wizard_dict, wizard_skills))
 
 cleric_dict = {
     'HP': 1.5,
-    'ATK': 0.3,
+    'ATK': 0.5,
     'DEF': 0.8,
     'MAG': 1.1,
     'SPR': 1.5,
@@ -195,9 +195,9 @@ HEROES.append(Hero('knight', knight_dict, knight_skills))
 
 MOBS = []
 hound_dict = {
-    'HP': 1.5,
-    'ATK': 0.5,
-    'DEF': 1,
+    'HP': 2,
+    'ATK': 0.6,
+    'DEF': 1.1,
     'MAG': 0.3,
     'SPR': 1.1,
     'SPD': 9
@@ -205,14 +205,15 @@ hound_dict = {
 hound_skills = []
 
 beastmaster_dict = {
-    'HP': 3,
+    'HP': 4,
     'ATK': 0.3,
     'DEF': 1.7,
-    'MAG': 0.3,
+    'MAG': 1,
     'SPR': 1.3,
     'SPD': 1
 }
-beastmaster_skills = [skills.NightCall(),
+beastmaster_skills = [skills.NatureWrath(),
+                      skills.NightCall(),
                       skills.BloodMoon()]
 
 MOBS.append(Mob('HellHoundA', hound_dict, hound_skills))

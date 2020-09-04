@@ -44,7 +44,7 @@ class Battle(object):
         while combo:
             t = []
             for h in combo:
-                for _ in range(h.SPD):
+                for _ in range(int(h.SPD**2)):
                     t.append(h)
             random.shuffle(t)
             _next = t[0]

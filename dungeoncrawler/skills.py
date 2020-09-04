@@ -82,7 +82,7 @@ class Heal(Ability):
 
     def effect(self, world, main, combo):
         _targets = []
-        _combo_targets = set(world.allies(main)) & {h for h in combo if h.hp}
+        _combo_targets = [h for h in world.yourteam if h.hp]
         if _combo_targets:
             main.mp = 0
             _targets.append(min(_combo_targets, key=lambda x: x.hp_ratio))
@@ -122,7 +122,8 @@ class SilentPrayer(Ability):
         super(SilentPrayer, self).__init__(name="Silent Prayer", mp_cost=70)
 
     def effect(self, world, main, combo):
-        _t = min(world.yourteam, key=lambda x: x.mp_ratio)
+        _targets = set(world.yourteam) & {h for h in combo if h.hp}
+        _t = min(_targets, key=lambda x: x.mp_ratio)
         _t.mp += _t.maxMP
         utils.slow_type(
             "%s: SILENT PRAYER restores full MP of %s\n" % (
@@ -132,7 +133,7 @@ class SilentPrayer(Ability):
 
 class NovaBlast(Ability):
     def __init__(self):
-        super(NovaBlast, self).__init__(name="Nova Blast", mp_cost=100)
+        super(NovaBlast, self).__init__(name="Nova Blast", mp_cost=120)
 
     def effect(self, world, main, combo):
         _targets = world.enemyteam
@@ -142,18 +143,19 @@ class NovaBlast(Ability):
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
-                "%s: NOVABLAST damages %s or %d. (%d -> %d)\n" % (
+                "%s: NOVABLAST damages %s for %d. (%d -> %d)\n" % (
                     main.name, _t.name, dmg, _oldt, _t.hp))
 
 
 class Focus(Ability):
     def __init__(self):
-        super(Focus, self).__init__(name="Focus", mp_cost=100)
+        super(Focus, self).__init__(name="Focus", mp_cost=120)
 
     def effect(self, world, main, combo):
         main.mp = 60
         main.MAG *= 1.5
-        utils.slow_type("%s: FOCUS increase MAG\n" % main.name)
+        main.SPD *= 1.5
+        utils.slow_type("%s: FOCUS increase MAG/SPD\n" % main.name)
 
 
 class BurstingQi(Ability):
@@ -175,7 +177,7 @@ class CuriousBox(Ability):
         _t = random.choice(
             [m for m in world.enemyteam if m.hp])
         main.mp = 0
-        _mult = int((random.random() * 4) + 1)
+        _mult = int((random.random() * random.random() * 3) + 1)
         dmg = self.hybrid_damage(main, _t, _mult)
         _oldt = _t.hp
         _t.hp -= dmg
@@ -210,7 +212,7 @@ class BootyTrap(Ability):
 class ChivalrousProtection(Ability):
     def __init__(self):
         super(ChivalrousProtection, self).__init__(
-            name="Chivalrous Protection", mp_cost=60)
+            name="Chivalrous Protection", mp_cost=80)
 
     def effect(self, world, main, combo):
         for _t in world.yourteam:
@@ -226,7 +228,7 @@ class ChivalrousProtection(Ability):
 class RighteousInspiration(Ability):
     def __init__(self):
         super(RighteousInspiration, self).__init__(
-            name="Righteous Inspiration", mp_cost=60)
+            name="Righteous Inspiration", mp_cost=80)
 
     def effect(self, world, main, combo):
         for _t in world.yourteam:
@@ -248,7 +250,7 @@ class NightCall(Ability):
     def effect(self, world, main, combo):
         _targets = world.enemyteam
         for _t in _targets:
-            dmg = self.healing_damage(main, 1.5)
+            dmg = self.healing_damage(main, 1.8)
             _oldt = _t.hp
             _t.hp += dmg
             utils.slow_type(
@@ -266,6 +268,29 @@ class BloodMoon(Ability):
     def effect(self, world, main, combo):
         _targets = world.enemyteam
         for _t in _targets:
-            _t.ATK *= 1.5
+            _t.ATK *= 1.35
             utils.slow_type("%s: BLOOD MOON increases ATK of %s\n" % (
                 main.name, _t.name))
+
+
+class NatureWrath(Ability):
+    def __init__(self):
+        super(NatureWrath, self).__init__(name="NatureWrath")
+
+    def predicate(self, world):
+        if len(world.enemyteam) == 1:
+            return True
+
+    def effect(self, world, main, combo):
+        _targets = [h for h in world.yourteam if h.hp]
+        for _t in _targets:
+            main.mp = 0
+            dmg = self.hybrid_damage(main, _t, 3.5)
+            _oldt = _t.hp
+            _t.hp -= dmg
+            utils.slow_type(
+                "%s: NATURE WRATH damages %s for %d. (%d -> %d)\n" % (
+                    main.name, _t.name, dmg, _oldt, _t.hp))
+        main.ATK *= 1.35
+        utils.slow_type(
+            "%s: NATURE WRATH increase Beastmaster ATK.\n" % main.name)
