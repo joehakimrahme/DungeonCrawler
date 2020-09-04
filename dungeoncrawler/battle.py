@@ -85,9 +85,10 @@ class Battle(object):
         while True:
             try:
                 cmd = input("\nPick your combo> ")
+                cmd = cmd.strip()
                 if cmd == "q":
                     break
-                if not re.match(r"[0-9]{1,3}", cmd):
+                if not re.match(r"^[0-9]{1,3}$", cmd):
                     print(
                         "Malformed input. Please input a proper combo string. "
                         "Examples: '124', '423', '21'.")
