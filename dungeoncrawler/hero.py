@@ -15,6 +15,7 @@
 import random
 
 from dungeoncrawler import skills
+from dungeoncrawler import utils
 
 
 attack_ability = skills.ATK()
@@ -33,6 +34,9 @@ class Fighter(object):
         self.skills = skills
         self._hp = self.maxHP
         self._mp = 0
+
+    def __repr__(self):
+        return self.name
 
     @property
     def maxMP(self):
@@ -77,8 +81,19 @@ class Fighter(object):
     def mp_ratio(self):
         return self.mp / self.maxMP * 100
 
-    def __repr__(self):
-        return self.name
+    def hp_bars(self):
+        bars = int(self.hp_ratio/100 * 15)
+        a = '█' * bars
+        b = "░" * (15 - bars)
+        return "%s%s%s%s" % (
+            utils.color_red, a, b, utils.color_reset)
+
+    def mp_bars(self):
+        bars = int(self.mp_ratio/100 * 15)
+        a = '█' * bars
+        b = "░" * (15 - bars)
+        return "%s%s%s%s" % (
+            utils.color_blue, a, b, utils.color_reset)
 
 
 class Hero(Fighter):
@@ -216,6 +231,7 @@ beastmaster_skills = [skills.NatureWrath(),
                       skills.NightCall(),
                       skills.BloodMoon()]
 
+beastmaster_name = utils.color_yellow + "Beastmaster" + utils.color_reset
 MOBS.append(Mob('HellHoundA', hound_dict, hound_skills))
 MOBS.append(Mob('HellHoundB', hound_dict, hound_skills))
-MOBS.append(Mob('BeastMaster', beastmaster_dict, beastmaster_skills))
+MOBS.append(Mob(beastmaster_name, beastmaster_dict, beastmaster_skills))

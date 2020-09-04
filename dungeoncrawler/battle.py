@@ -69,17 +69,19 @@ class Battle(object):
         print("-------------\n")
         for i, h in enumerate(self.yourteam):
             print(
-                "%d %s, %d/%d, %d/%d, %s" %
+                "%d %-13s HP: %4d/%-4d %s - MP: %3d/%-3d %s, %s" %
                 (i + 1, h.name,
                  h.hp, h.maxHP,
+                 h.hp_bars(),
                  h.mp, h.maxMP,
+                 h.mp_bars(),
                  choices[h.name])
             )
         print('')
         for m in self.enemyteam:
             print(
-                "%s %d/%d" % (
-                    m.name, m.hp, m.maxHP))
+                "%-15s HP: %4d/%-4d %s" % (
+                    m.name, m.hp, m.maxHP, m.hp_bars()))
 
     def generate_combo(self):
         while True:
