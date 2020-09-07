@@ -37,6 +37,26 @@ def color(message, c):
     return message
 
 
+def color_black(msg):
+    return color(msg, 'black')
+
+
+def color_red(msg):
+    return color(msg, 'red')
+
+
+def color_green(msg):
+    return color(msg, 'green')
+
+
+def color_yellow(msg):
+    return color(msg, 'yellow')
+
+
+def bold(msg):
+    return color(msg, 'bold')
+
+
 def slow_type(t):
     """Simluates a human typing effect.
 

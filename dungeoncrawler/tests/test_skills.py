@@ -78,6 +78,7 @@ class ATKTest(unittest.TestCase):
     def test_ATK_effect(self, slow_type):
         world = mock.Mock()
         world.rivals = MagicMock(return_value=(self.fighters[1],))
+        world.yourteam = self.fighters
 
         self.ability.effect(
             world, self.fighters[0], self.fighters)

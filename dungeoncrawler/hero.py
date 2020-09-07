@@ -83,14 +83,14 @@ class Fighter(object):
 
     def hp_bars(self):
         bars = int(self.hp_ratio * 0.2)
-        a = '■' * bars
-        b = "." * (20 - bars)
+        a = '▰' * bars
+        b = "▱" * (20 - bars)
         return utils.color("".join((a, b)), "red")
 
     def mp_bars(self):
         bars = int(self.mp_ratio * 0.1)
-        a = '■' * bars
-        b = "." * (10 - bars)
+        a = '▰' * bars
+        b = "▱" * (10 - bars)
         return utils.color("".join((a, b)), "blue")
 
 

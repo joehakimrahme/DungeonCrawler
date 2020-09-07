@@ -69,8 +69,16 @@ class ATK(Ability):
             dmg = self.physical_damage(main, _t, 1)
             _oldt = _t.hp
             _t.hp -= dmg
-            utils.slow_type("%s: ATTACK %s for %s damage. (%d -> %d)\n" % (
-                main.name, _t.name, dmg, _oldt, _t.hp))
+
+            # coloring
+            if main in world.yourteam:
+                color = utils.color_green
+            else:
+                color = utils.color_red
+
+            utils.slow_type("%s: swings at %s dealing %s dmg. (%d -> %d)\n" % (
+                utils.bold(color(main.name)),
+                _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
             _mp_gain = dmg * 0.3
             if _t.hp:
                 _t.mp += 60 if _mp_gain > 60 else _mp_gain
@@ -79,7 +87,7 @@ class ATK(Ability):
 
 class Heal(Ability):
     def __init__(self):
-        super(Heal, self).__init__(name='Heal', mp_cost=70)
+        super(Heal, self).__init__(name='A Well Intentioned Wish', mp_cost=70)
 
     def effect(self, world, main, combo):
         _targets = []
@@ -92,13 +100,16 @@ class Heal(Ability):
             dmg = self.healing_damage(main, 3)
             _oldt = _t.hp
             _t.hp += dmg
-            utils.slow_type("%s: HEAL %s for %dHP. (%d -> %d)\n" % (
-                main.name, _t.name, dmg, _oldt, _t.hp))
+            utils.slow_type("%s: [%s] on %s for %sHP. (%d -> %d)\n" % (
+                utils.bold(utils.color_green(main.name)),
+                utils.color_yellow(self.name),
+                _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
 class ThousandFists(Ability):
     def __init__(self):
-        super(ThousandFists, self).__init__(name="ThousandFists", mp_cost=120)
+        super(ThousandFists, self).__init__(name="A Thousand Fists",
+                                            mp_cost=120)
 
     def effect(self, world, main, combo):
         _targets = []
@@ -114,27 +125,32 @@ class ThousandFists(Ability):
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
-                "%s: THOUSAND FISTS %s for %s damage. (%d -> %d)\n" % (
-                    main.name, _t.name, dmg, _oldt, _t.hp))
+                "%s: [%s] on %s dealing %s dmg"
+                ". (%d -> %d)\n" % (
+                    utils.bold(utils.color_green(main.name)),
+                    utils.color_yellow(self.name),
+                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
 class SilentPrayer(Ability):
     def __init__(self):
-        super(SilentPrayer, self).__init__(name="Silent Prayer", mp_cost=70)
+        super(SilentPrayer, self).__init__(name="A Silent Prayer", mp_cost=70)
 
     def effect(self, world, main, combo):
         _targets = set(world.yourteam) & {h for h in combo if h.hp}
         _t = min(_targets, key=lambda x: x.mp_ratio)
         _t.mp += _t.maxMP
         utils.slow_type(
-            "%s: SILENT PRAYER restores full MP of %s\n" % (
-                main.name, _t.name))
+            "%s: [%s] on %s restoring full MP.\n" % (
+                utils.bold(utils.color_green(main.name)),
+                utils.color_yellow(self.name), _t.name))
         main.mp = 0
 
 
 class NovaBlast(Ability):
     def __init__(self):
-        super(NovaBlast, self).__init__(name="Nova Blast", mp_cost=120)
+        super(NovaBlast, self).__init__(name="Supernova Blast",
+                                        mp_cost=120)
 
     def effect(self, world, main, combo):
         _targets = world.enemyteam
@@ -144,35 +160,42 @@ class NovaBlast(Ability):
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
-                "%s: NOVABLAST damages %s for %d. (%d -> %d)\n" % (
-                    main.name, _t.name, dmg, _oldt, _t.hp))
+                "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
+                    utils.bold(utils.color_green(main.name)),
+                    utils.color_yellow(self.name),
+                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
 class Focus(Ability):
     def __init__(self):
-        super(Focus, self).__init__(name="Focus", mp_cost=120)
+        super(Focus, self).__init__(name="Sharp Focus", mp_cost=120)
 
     def effect(self, world, main, combo):
         main.mp = 60
         main.MAG *= 1.5
         main.SPD *= 1.5
-        utils.slow_type("%s: FOCUS increase MAG/SPD\n" % main.name)
+        utils.slow_type("%s: [%s] on self increasing MAG/SPD.\n" % (
+            utils.bold(utils.color_green(main.name)),
+            utils.color_yellow(self.name)))
 
 
 class BurstingQi(Ability):
     def __init__(self):
-        super(BurstingQi, self).__init__(name="BurstingQi", mp_cost=120)
+        super(BurstingQi, self).__init__(name="Bursting Qi", mp_cost=120)
 
     def effect(self, world, main, combo):
         main.mp = 60
         main.ATK *= 1.2
         main.DEF *= 1.2
-        utils.slow_type("%s: BURSTING QI increase ATK and DEF\n" % main.name)
+        utils.slow_type(
+            "%s: [%s] on self increase ATK and DEF.\n" % (
+                utils.bold(utils.color_green(main.name)),
+                utils.color_yellow(self.name)))
 
 
 class CuriousBox(Ability):
     def __init__(self):
-        super(CuriousBox, self).__init__(name="Curious Box", mp_cost=100)
+        super(CuriousBox, self).__init__(name="A Curious Box", mp_cost=100)
 
     def effect(self, world, main, combo):
         _targets = [m for m in world.enemyteam if m.hp]
@@ -184,15 +207,17 @@ class CuriousBox(Ability):
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
-                "%s: CURIOUS BOX %s for %s damage. (%d -> %d)\n" % (
-                    main.name, _t.name, dmg, _oldt, _t.hp))
+                "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
+                    utils.bold(utils.color_green(main.name)),
+                    utils.color_yellow(self.name),
+                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
             if random.random() < 0.6 and any([m.hp for m in world.enemyteam]):
                 self.effect(world, main, combo)
 
 
 class BootyTrap(Ability):
     def __init__(self):
-        super(BootyTrap, self).__init__(name="Booty Trap", mp_cost=100)
+        super(BootyTrap, self).__init__(name="Booby Trap", mp_cost=100)
 
     def effect(self, world, main, combo):
         _t = max(world.enemyteam, key=lambda x: x.DEF)
@@ -202,13 +227,16 @@ class BootyTrap(Ability):
             dmg = self.hybrid_damage(main, _t, 1.5)
             _t.hp -= dmg
             utils.slow_type(
-                "%s: BOOTY TRAP %s for %d damage. (%d -> %d)\n" % (
-                    main.name, _t.name, dmg, _oldt, _t.hp))
+                "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
+                    utils.bold(utils.color_green(main.name)),
+                    utils.color_yellow(self.name),
+                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
             _t.DEF *= 0.8
             _t.SPR *= 0.8
             utils.slow_type(
-                "%s: BOOTY TRAP broke DEF/SPR of %s\n" % (
-                    main.name, _t.name))
+                "%s: [%s] on %s decreases DEF/SPR.\n" % (
+                    utils.bold(utils.color_green(main.name)),
+                    utils.color_yellow(self.name), _t.name))
 
 
 class ChivalrousProtection(Ability):
@@ -223,8 +251,9 @@ class ChivalrousProtection(Ability):
                 _t.DEF *= 1.2
                 _t.SPR *= 1.2
                 utils.slow_type(
-                    "%s: CHIVALROUS PROTECTION increased DEF/SPR of %s\n" % (
-                        main.name, _t.name))
+                    "%s: [%s] on %s increases DEF/SPR.\n" % (
+                        utils.bold(utils.color_green(main.name)),
+                        utils.color_yellow(self.name), _t.name))
 
 
 class RighteousInspiration(Ability):
@@ -238,8 +267,9 @@ class RighteousInspiration(Ability):
                 main.mp = 0
                 _t.mp *= 2
                 utils.slow_type(
-                    "%s: RIGHTEOUS INSPIRATION restored MP of %s\n" % (
-                        main.name, _t.name))
+                    "%s: [%s] on %s restoring MP.\n" % (
+                        utils.bold(utils.color_green(main.name)),
+                        utils.color_yellow(self.name), _t.name))
 
 
 class NightCall(Ability):
@@ -256,13 +286,15 @@ class NightCall(Ability):
             _oldt = _t.hp
             _t.hp += dmg
             utils.slow_type(
-                "%s: NIGHT CALL heals %s for %d. (%d -> %d)\n" % (
-                    main.name, _t.name, dmg, _oldt, _t.hp))
+                "%s: [%s] on %s healing for %s. (%d -> %d)\n" % (
+                    utils.bold(utils.color_red(main.name)),
+                    utils.color_yellow(self.name),
+                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
 class BloodMoon(Ability):
     def __init__(self):
-        super(BloodMoon, self).__init__(name="BloodMoon")
+        super(BloodMoon, self).__init__(name="Blood Moon")
 
     def predicate(self, world):
         return True
@@ -271,13 +303,14 @@ class BloodMoon(Ability):
         _targets = world.enemyteam
         for _t in _targets:
             _t.ATK *= 1.35
-            utils.slow_type("%s: BLOOD MOON increases ATK of %s\n" % (
-                main.name, _t.name))
+            utils.slow_type("%s: [%s] on %s increases ATK.\n" % (
+                utils.bold(utils.color_red(main.name)),
+                utils.color_yellow(self.name), _t.name))
 
 
 class NatureWrath(Ability):
     def __init__(self):
-        super(NatureWrath, self).__init__(name="NatureWrath")
+        super(NatureWrath, self).__init__(name="Nature Wrath")
 
     def predicate(self, world):
         if len(world.enemyteam) == 1:
@@ -291,8 +324,12 @@ class NatureWrath(Ability):
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
-                "%s: NATURE WRATH damages %s for %d. (%d -> %d)\n" % (
-                    main.name, _t.name, dmg, _oldt, _t.hp))
+                "%s: [%s] on %s dealing %d dmg. (%d -> %d)\n" % (
+                    utils.bold(utils.color_red(main.name)),
+                    utils.color_yellow(self.name),
+                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
         main.ATK *= 1.35
         utils.slow_type(
-            "%s: NATURE WRATH increase Beastmaster ATK.\n" % main.name)
+            "%s: [%s] on self increasing ATK.\n" % (
+                utils.bold(utils.color_red(main.name)),
+                utils.color_yellow(self.name)))

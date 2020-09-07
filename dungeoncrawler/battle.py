@@ -14,6 +14,7 @@
 #    under the License.
 import random
 import re
+import readline
 
 from dungeoncrawler import hero
 from dungeoncrawler import utils
@@ -67,31 +68,37 @@ class Battle(object):
         return choices
 
     def display_choice(self, choices):
-        print("-------------\n")
+        print("-------------")
+        print("%s %-23s %-22s %-19s %-s" % (
+            "#", "NAME", "HIT POINTS", "MANA POINTS", "CHOICE")
+        )
+        print()
         for i, h in enumerate(self.yourteam):
             if h.hp:
                 _c = choices[h.name]
                 if h.mp_ratio == 100:
                     _c = utils.color(_c.name, 'bold')
                 print(
-                    "%d %-21s HP: %4d/%-4d %s - MP: %3d/%-3d %s, %s" %
+                    "%d %-21s %4d/%-4d %s - %s %3d/%-3d  %s" %
                     (i + 1, utils.color(h.name, 'bold'),
                      h.hp, h.maxHP,
                      h.hp_bars(),
-                     h.mp, h.maxMP,
                      h.mp_bars(),
+                     h.mp, h.maxMP,
                      _c)
                 )
-        print('')
+        print()
         for m in self.enemyteam:
             print(
-                "%-15s HP: %4d/%-4d %s" % (
+                "%-15s %4d/%-4d %s" % (
                     m.name, m.hp, m.maxHP, m.hp_bars()))
+        print("-------------\n")
 
     def generate_combo(self):
         while True:
             try:
-                cmd = input("\nPick your combo> ")
+                readline.parse_and_bind('tab: complete')
+                cmd = input("Pick your combo> ")
                 cmd = cmd.strip()
                 if cmd == "q":
                     break
@@ -116,14 +123,10 @@ class Battle(object):
             return combo
 
     def execute_step(self, combo, choices):
+        print()
         for h in combo:
             if h.hp:
-                if h in self.yourteam:
-                    print("\u001b[32m", end="")
-                else:
-                    print("\u001b[31m", end="")
                 choices[h.name].effect(self, h, combo)
-                print("\u001b[0m", end="")
             # execute end-of-step
             for mob in self.enemyteam:
                 if mob.hp == 0:
