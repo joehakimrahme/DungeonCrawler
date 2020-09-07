@@ -82,7 +82,7 @@ class ATK(Ability):
             _mp_gain = dmg * 0.3
             if _t.hp:
                 _t.mp += 60 if _mp_gain > 60 else _mp_gain
-            main.mp += 30 if _mp_gain > 40 else _mp_gain
+            main.mp += 40 if _mp_gain > 40 else _mp_gain
 
 
 class Heal(Ability):
