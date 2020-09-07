@@ -71,9 +71,10 @@ class ATK(Ability):
             _t.hp -= dmg
             utils.slow_type("%s: ATTACK %s for %s damage. (%d -> %d)\n" % (
                 main.name, _t.name, dmg, _oldt, _t.hp))
+            _mp_gain = dmg * 0.3
             if _t.hp:
-                _t.mp += (dmg * 0.3) % 60
-        main.mp += (dmg * 0.3) % 40
+                _t.mp += 60 if _mp_gain > 60 else _mp_gain
+            main.mp += 30 if _mp_gain > 40 else _mp_gain
 
 
 class Heal(Ability):
@@ -174,18 +175,19 @@ class CuriousBox(Ability):
         super(CuriousBox, self).__init__(name="Curious Box", mp_cost=100)
 
     def effect(self, world, main, combo):
-        _t = random.choice(
-            [m for m in world.enemyteam if m.hp])
-        main.mp = 0
-        _mult = int((random.random() * random.random() * 3) + 1)
-        dmg = self.hybrid_damage(main, _t, _mult)
-        _oldt = _t.hp
-        _t.hp -= dmg
-        utils.slow_type(
-            "%s: CURIOUS BOX %s for %s damage. (%d -> %d)\n" % (
-                main.name, _t.name, dmg, _oldt, _t.hp))
-        if random.random() < 0.5 and any([m.hp for m in world.enemyteam]):
-            self.effect(world, main, combo)
+        _targets = [m for m in world.enemyteam if m.hp]
+        if _targets:
+            _t = random.choice(_targets)
+            main.mp = 0
+            _mult = int((random.random() * random.random() * 3) + 1)
+            dmg = self.hybrid_damage(main, _t, _mult)
+            _oldt = _t.hp
+            _t.hp -= dmg
+            utils.slow_type(
+                "%s: CURIOUS BOX %s for %s damage. (%d -> %d)\n" % (
+                    main.name, _t.name, dmg, _oldt, _t.hp))
+            if random.random() < 0.6 and any([m.hp for m in world.enemyteam]):
+                self.effect(world, main, combo)
 
 
 class BootyTrap(Ability):
