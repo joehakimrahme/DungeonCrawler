@@ -181,9 +181,9 @@ HEROES.append(Hero('monk', monk_dict, monk_skills))
 ninja_dict = {
     'HP': 1.7,
     'ATK': 1.4,
-    'DEF': 1.1,
+    'DEF': 1,
     'MAG': 1.15,
-    'SPR': 1.1,
+    'SPR': 1.2,
     'SPD': 5,
 }
 ninja_skills = [
@@ -209,11 +209,11 @@ HEROES.append(Hero('knight', knight_dict, knight_skills))
 
 MOBS = []
 hound_dict = {
-    'HP': 2,
+    'HP': 1.8,
     'ATK': 0.6,
-    'DEF': 1.1,
+    'DEF': 1.7,
     'MAG': 0.3,
-    'SPR': 1.1,
+    'SPR': 0.9,
     'SPD': 9
 }
 hound_skills = []
