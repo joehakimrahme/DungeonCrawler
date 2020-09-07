@@ -82,12 +82,12 @@ class BattleTest(unittest.TestCase):
             self.assertEqual(result[key.name], skills.ATK(), (result, key))
 
     def test_generate_choice_mob(self):
-        self.battle.enemyteam[0].skills = [skills.NightCall()]
-        self.battle.enemyteam[1].skills = [skills.NightCall()]
+        self.battle.enemyteam[0].skills = [skills.BubblyPickMeUp()]
+        self.battle.enemyteam[1].skills = [skills.BubblyPickMeUp()]
         self.battle.enemyteam[1].hp -= 300
         result = self.battle.generate_choices(self.battle)
         self.assertEqual(
-            result[self.battle.enemyteam[0].name], skills.NightCall())
+            result[self.battle.enemyteam[0].name], skills.BubblyPickMeUp())
         self.battle.enemyteam[1].hp += 300
         result = self.battle.generate_choices(self.battle)
         self.assertEqual(result[self.battle.enemyteam[0].name], skills.ATK())

@@ -194,7 +194,7 @@ class BurstingQiTest(unittest.TestCase):
         self.assertGreater(self.team[0].DEF, _olddef)
 
 
-class NightCallTest(unittest.TestCase):
+class BubblyPickMeUpTest(unittest.TestCase):
     def setUp(self):
         self.fighters = [
             utils.create_neutral_fighter(),
@@ -204,12 +204,12 @@ class NightCallTest(unittest.TestCase):
             utils.create_neutral_mob(),
             utils.create_neutral_mob()
         ]
-        self.ability = skills.NightCall()
+        self.ability = skills.BubblyPickMeUp()
 
     # unittest.mock.patch slow_type in order to avoid wasting time on
     # visual execution
     @patch('dungeoncrawler.utils.slow_type')
-    def test_NightCall_effect(self, slow_type):
+    def test_bubblyl_effect(self, slow_type):
         world = mock.Mock()
         world.enemyteam = self.mobs
         self.mobs[1].hp -= 300
@@ -218,18 +218,18 @@ class NightCallTest(unittest.TestCase):
         self.assertGreater(self.mobs[1].hp_ratio, 40)
 
 
-class BloodMoonTest(unittest.TestCase):
+class TemporaryInsanityTest(unittest.TestCase):
     def setUp(self):
         self.mobs = [
             utils.create_neutral_mob(),
             utils.create_neutral_mob()
         ]
-        self.ability = skills.BloodMoon()
+        self.ability = skills.TemporaryInsanity()
 
     # unittest.mock.patch slow_type in order to avoid wasting time on
     # visual execution
     @patch('dungeoncrawler.utils.slow_type')
-    def test_Bloodmoon_effect(self, slow_type):
+    def test_insanity_effect(self, slow_type):
         world = mock.Mock()
         world.enemyteam = self.mobs
 
@@ -237,3 +237,29 @@ class BloodMoonTest(unittest.TestCase):
             world, self.mobs[0], self.mobs)
         for mob in self.mobs:
             self.assertGreater(mob.ATK, 100)
+
+
+class AngryOwnertest(unittest.TestCase):
+    def setUp(self):
+        self.team = [
+            utils.create_neutral_hero(),
+            utils.create_neutral_hero()
+        ]
+        self.mobs = [
+            utils.create_neutral_mob(),
+            utils.create_neutral_mob()
+        ]
+        self.ability = skills.AngryOwner()
+
+    # unittest.mock.patch slow_type in order to avoid wasting time on
+    # visual execution
+    @patch('dungeoncrawler.utils.slow_type')
+    def test_insanity_effect(self, slow_type):
+        world = mock.Mock()
+        world.yourteam = self.team
+        world.enemyteam = self.mobs
+
+        self.ability.effect(
+            world, self.mobs[0], self.mobs)
+
+        self.assertTrue(all(h.hp_ratio < 100 for h in self.team))

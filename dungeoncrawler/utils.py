@@ -63,12 +63,12 @@ def slow_type(t):
      taken from https://stackoverflow.com/q/4099422/403401
 
     """
-    typing_speed = 150
+    typing_speed = 180
     for letter in t:
         sys.stdout.write(letter)
         sys.stdout.flush()
-        if t == " ":
-            interval = 50
+        if letter in ". ":
+            interval = 20
         else:
             interval = 10
         time.sleep(random.random() * interval / typing_speed)

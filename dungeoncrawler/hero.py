@@ -136,7 +136,7 @@ class Mob(Fighter):
 HEROES = []
 
 wizard_dict = {
-    'HP': 0.8,
+    'HP': 1.2,
     'ATK': 0.6,
     'DEF': 0.9,
     'MAG': 1.2,
@@ -180,7 +180,7 @@ HEROES.append(Hero('monk', monk_dict, monk_skills))
 
 ninja_dict = {
     'HP': 1.7,
-    'ATK': 1.4,
+    'ATK': 1.2,
     'DEF': 1,
     'MAG': 1.15,
     'SPR': 1.2,
@@ -194,7 +194,7 @@ HEROES.append(Hero('ninja', ninja_dict, ninja_skills))
 
 knight_dict = {
     'HP': 2.2,
-    'ATK': 1.15,
+    'ATK': 1.4,
     'DEF': 1.5,
     'MAG': 0.8,
     'SPR': 1.4,
@@ -208,17 +208,17 @@ HEROES.append(Hero('knight', knight_dict, knight_skills))
 
 
 MOBS = []
-hound_dict = {
+drunk_dict = {
     'HP': 1.8,
     'ATK': 0.6,
     'DEF': 1.7,
     'MAG': 0.3,
     'SPR': 0.9,
-    'SPD': 9
+    'SPD': 7
 }
-hound_skills = []
+drunk_skills = []
 
-beastmaster_dict = {
+bartender_dict = {
     'HP': 4,
     'ATK': 0.3,
     'DEF': 1.7,
@@ -226,10 +226,10 @@ beastmaster_dict = {
     'SPR': 1.3,
     'SPD': 1
 }
-beastmaster_skills = [skills.NatureWrath(),
-                      skills.NightCall(),
-                      skills.BloodMoon()]
+bartender_skills = [skills.AngryOwner(),
+                    skills.BubblyPickMeUp(),
+                    skills.TemporaryInsanity()]
 
-MOBS.append(Mob('HellHoundA', hound_dict, hound_skills))
-MOBS.append(Mob('HellHoundB', hound_dict, hound_skills))
-MOBS.append(Mob("Beastmaster", beastmaster_dict, beastmaster_skills))
+MOBS.append(Mob('Charging Drunk B', drunk_dict, drunk_skills))
+MOBS.append(Mob('Charging Drunk A', drunk_dict, drunk_skills))
+MOBS.append(Mob("Crazed Bartender", bartender_dict, bartender_skills))

@@ -243,14 +243,14 @@ class BootyTrap(Ability):
 class ChivalrousProtection(Ability):
     def __init__(self):
         super(ChivalrousProtection, self).__init__(
-            name="Chivalrous Protection", mp_cost=80)
+            name="Chivalrous Protection", mp_cost=100)
 
     def effect(self, world, main, combo):
         for _t in world.yourteam:
             if _t.hp:
                 main.mp = 0
-                _t.DEF *= 1.2
-                _t.SPR *= 1.2
+                _t.DEF *= 1.8
+                _t.SPR *= 1.8
                 utils.slow_type(
                     "%s: [%s] on %s increases DEF/SPR.\n" % (
                         utils.bold(utils.color_green(main.name)),
@@ -260,23 +260,23 @@ class ChivalrousProtection(Ability):
 class RighteousInspiration(Ability):
     def __init__(self):
         super(RighteousInspiration, self).__init__(
-            name="Righteous Inspiration", mp_cost=80)
+            name="Righteous Inspiration", mp_cost=100)
 
     def effect(self, world, main, combo):
         _targets = [h for h in world.yourteam if (h.mp * h.hp)]
         for _t in _targets:
             if _t.hp:
                 main.mp = 0
-                _t.mp *= 2
+                _t.mp *= 3
                 utils.slow_type(
                     "%s: [%s] on %s restoring MP.\n" % (
                         utils.bold(utils.color_green(main.name)),
                         utils.color_yellow(self.name), _t.name))
 
 
-class NightCall(Ability):
+class BubblyPickMeUp(Ability):
     def __init__(self):
-        super(NightCall, self).__init__(name="Night Call")
+        super(BubblyPickMeUp, self).__init__(name="Bubbly Pick-me-up")
 
     def predicate(self, world):
         return any((mob.hp_ratio < 60 for mob in world.enemyteam))
@@ -294,9 +294,9 @@ class NightCall(Ability):
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
-class BloodMoon(Ability):
+class TemporaryInsanity(Ability):
     def __init__(self):
-        super(BloodMoon, self).__init__(name="Blood Moon")
+        super(TemporaryInsanity, self).__init__(name="Temporary Insanity")
 
     def predicate(self, world):
         return True
@@ -310,9 +310,9 @@ class BloodMoon(Ability):
                 utils.color_yellow(self.name), _t.name))
 
 
-class NatureWrath(Ability):
+class AngryOwner(Ability):
     def __init__(self):
-        super(NatureWrath, self).__init__(name="Nature Wrath")
+        super(AngryOwner, self).__init__(name="Angry Owner")
 
     def predicate(self, world):
         if len(world.enemyteam) == 1:

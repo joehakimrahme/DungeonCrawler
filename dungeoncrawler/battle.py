@@ -30,6 +30,22 @@ class Battle(object):
         self.yourteam = yourteam
         self.enemyteam = enemyteam
         self.status = []
+        self.intro = """
+
+You know what you have to do, you've been here before. The fate of the
+world depends on you and your friends. You need to go there, you need
+to stop Evil. You need to fulfill the prophecy.
+.
+.
+.
+.
+But first you need a drink.
+
+You stop at the local tavern, hoping to find good mead, instead you
+find a good old fashioned brawl.
+
+And now the drunks are charging at you...
+"""
 
     def rivals(self, hero):
         if hero in self.yourteam:
@@ -69,7 +85,7 @@ class Battle(object):
 
     def display_choice(self, choices):
         print("-" * 90)
-        print("%s %-23s %-22s %-19s %-s" % (
+        print("%s %-24s %-22s %-19s %-s" % (
             "#", "NAME", "HIT POINTS", "MANA POINTS", "CHOICE")
         )
         print()
@@ -134,6 +150,7 @@ class Battle(object):
                     self.enemyteam.remove(mob)
 
     def battle_loop(self):
+        utils.slow_type(self.intro)
         # Execute start-of-battle
         while True:
             win = self.check_for_win()
