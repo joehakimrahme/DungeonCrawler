@@ -68,7 +68,7 @@ class Battle(object):
         return choices
 
     def display_choice(self, choices):
-        print("-------------")
+        print("-" * 90)
         print("%s %-23s %-22s %-19s %-s" % (
             "#", "NAME", "HIT POINTS", "MANA POINTS", "CHOICE")
         )
@@ -92,7 +92,8 @@ class Battle(object):
             print(
                 "%-15s %4d/%-4d %s" % (
                     m.name, m.hp, m.maxHP, m.hp_bars()))
-        print("-------------\n")
+        print("-" * 90)
+        print()
 
     def generate_combo(self):
         while True:
@@ -120,10 +121,10 @@ class Battle(object):
                 continue
             combo += self.enemyteam
             combo = self.weighted_shuffle(combo)
+            print()
             return combo
 
     def execute_step(self, combo, choices):
-        print()
         for h in combo:
             if h.hp:
                 choices[h.name].effect(self, h, combo)

@@ -82,7 +82,7 @@ class ATK(Ability):
             _mp_gain = dmg * 0.3
             if _t.hp:
                 _t.mp += 60 if _mp_gain > 60 else _mp_gain
-            main.mp += 40 if _mp_gain > 40 else _mp_gain
+            main.mp += 30 if _mp_gain > 30 else _mp_gain
 
 
 class Heal(Ability):
@@ -100,7 +100,7 @@ class Heal(Ability):
             dmg = self.healing_damage(main, 3)
             _oldt = _t.hp
             _t.hp += dmg
-            utils.slow_type("%s: [%s] on %s for %sHP. (%d -> %d)\n" % (
+            utils.slow_type("%s: [%s] on %s for %s HP. (%d -> %d)\n" % (
                 utils.bold(utils.color_green(main.name)),
                 utils.color_yellow(self.name),
                 _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
@@ -231,12 +231,13 @@ class BootyTrap(Ability):
                     utils.bold(utils.color_green(main.name)),
                     utils.color_yellow(self.name),
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
-            _t.DEF *= 0.8
-            _t.SPR *= 0.8
-            utils.slow_type(
-                "%s: [%s] on %s decreases DEF/SPR.\n" % (
-                    utils.bold(utils.color_green(main.name)),
-                    utils.color_yellow(self.name), _t.name))
+            if _t.hp:
+                _t.DEF *= 0.8
+                _t.SPR *= 0.8
+                utils.slow_type(
+                    "%s: [%s] on %s decreases DEF/SPR.\n" % (
+                        utils.bold(utils.color_green(main.name)),
+                        utils.color_yellow(self.name), _t.name))
 
 
 class ChivalrousProtection(Ability):
@@ -262,7 +263,8 @@ class RighteousInspiration(Ability):
             name="Righteous Inspiration", mp_cost=80)
 
     def effect(self, world, main, combo):
-        for _t in world.yourteam:
+        _targets = [h for h in world.yourteam if (h.mp * h.hp)]
+        for _t in _targets:
             if _t.hp:
                 main.mp = 0
                 _t.mp *= 2
@@ -280,7 +282,7 @@ class NightCall(Ability):
         return any((mob.hp_ratio < 60 for mob in world.enemyteam))
 
     def effect(self, world, main, combo):
-        _targets = world.enemyteam
+        _targets = [m for m in world.enemyteam if m.hp]
         for _t in _targets:
             dmg = self.healing_damage(main, 1.8)
             _oldt = _t.hp
@@ -324,7 +326,7 @@ class NatureWrath(Ability):
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
-                "%s: [%s] on %s dealing %d dmg. (%d -> %d)\n" % (
+                "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
                     utils.bold(utils.color_red(main.name)),
                     utils.color_yellow(self.name),
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
