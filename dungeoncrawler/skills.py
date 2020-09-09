@@ -91,7 +91,13 @@ class Heal(Ability):
 
     def effect(self, world, main, combo):
         _targets = []
-        _combo_targets = [h for h in world.yourteam if h.hp]
+        _combo_targets = []
+        for h in world.yourteam:
+            if h in combo and h.hp:
+                _combo_targets.append(h)
+        if not _combo_targets:
+            _combo_targets = world.yourteam
+
         if _combo_targets:
             main.mp = 0
             _targets.append(min(_combo_targets, key=lambda x: x.hp_ratio))
@@ -139,12 +145,12 @@ class SilentPrayer(Ability):
     def effect(self, world, main, combo):
         _targets = set(world.yourteam) & {h for h in combo if h.hp}
         _t = min(_targets, key=lambda x: x.mp_ratio)
+        main.mp = 0
         _t.mp += _t.maxMP
         utils.slow_type(
             "%s: [%s] on %s restoring full MP.\n" % (
                 utils.bold(utils.color_green(main.name)),
                 utils.color_yellow(self.name), _t.name))
-        main.mp = 0
 
 
 class NovaBlast(Ability):
