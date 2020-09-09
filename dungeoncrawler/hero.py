@@ -230,6 +230,6 @@ bartender_skills = [skills.AngryOwner(),
                     skills.BubblyPickMeUp(),
                     skills.TemporaryInsanity()]
 
-MOBS.append(Mob('Charging Drunk B', drunk_dict, drunk_skills))
 MOBS.append(Mob('Charging Drunk A', drunk_dict, drunk_skills))
+MOBS.append(Mob('Charging Drunk B', drunk_dict, drunk_skills))
 MOBS.append(Mob("Crazed Bartender", bartender_dict, bartender_skills))
