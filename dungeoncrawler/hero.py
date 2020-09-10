@@ -82,16 +82,24 @@ class Fighter(object):
         return self.mp / self.maxMP * 100
 
     def hp_bars(self):
-        bars = int(self.hp_ratio * 0.2)
-        a = '▰' * bars
-        b = "▱" * (20 - bars)
-        return utils.color("".join((a, b)), "red")
+        return utils.bars(
+            size=20, color_fill="red", ratio=self.hp_ratio)
 
     def mp_bars(self):
-        bars = int(self.mp_ratio * 0.1)
-        a = '▰' * bars
-        b = "▱" * (10 - bars)
-        return utils.color("".join((a, b)), "blue")
+        return utils.bars(
+            size=10, color_fill="blue", ratio=self.mp_ratio)
+
+    def bars(self):
+        _currentHP = str(int(self.hp))
+        _maxHP = str(int(self.maxHP))
+        _currentMP = str(int(self.mp))
+        _maxMP = str(int(self.maxMP))
+
+        return "%9s %s - %s %-9s" % (
+            "/".join((_currentHP, _maxHP)),
+            self.hp_bars(),
+            self.mp_bars(),
+            "/".join((_currentMP, _maxMP)))
 
 
 class Hero(Fighter):
@@ -131,6 +139,14 @@ class Mob(Fighter):
             if s.predicate(world):
                 return s
         return attack_ability
+
+    def bars(self):
+        _currentHP = str(int(self.hp))
+        _maxHP = str(int(self.maxHP))
+
+        return "%9s %s" % (
+            "/".join((_currentHP, _maxHP)),
+            self.hp_bars())
 
 
 HEROES = []

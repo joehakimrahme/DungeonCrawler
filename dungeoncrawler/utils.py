@@ -116,3 +116,10 @@ def create_neutral_mob():
             'SPD': 1
         },
         skills=())
+
+
+def bars(color_fill, size, ratio):
+    bars = int(ratio * size / 100)
+    a = '▰' * bars
+    b = "▱" * (size - bars)
+    return color("".join((a, b)), color_fill)

@@ -31,7 +31,6 @@ class Battle(object):
         self.enemyteam = enemyteam
         self.status = []
         self.intro = """
-
 You know what you have to do, you've been here before. The fate of the
 world depends on you and your friends. You need to go there, you need
 to stop Evil. You need to fulfill the prophecy.
@@ -92,19 +91,16 @@ And now the drunks are charging at you...
                 if h.mp_ratio == 100:
                     _c = utils.color(_c.name, 'bold')
                 print(
-                    "%d %-21s %4d/%-4d %s - %s %3d/%-3d  %s" %
+                    "%d %-22s %s %s" %
                     (i + 1, utils.color(h.name, 'bold'),
-                     h.hp, h.maxHP,
-                     h.hp_bars(),
-                     h.mp_bars(),
-                     h.mp, h.maxMP,
-                     _c)
+                     h.bars(), _c)
                 )
         print()
         for m in self.enemyteam:
             print(
-                "%-15s %4d/%-4d %s" % (
-                    m.name, m.hp, m.maxHP, m.hp_bars()))
+                "%-15s %9s %s" % (
+                    m.name, "/".join((str(int(m.hp)), str(int(m.maxHP)))),
+                    m.hp_bars()))
         print("-" * 90)
         print()
 
