@@ -271,7 +271,7 @@ class RighteousInspiration(Ability):
     def effect(self, world, main, combo):
         _targets = [h for h in world.yourteam if (h.mp * h.hp)]
         for _t in _targets:
-            if _t.hp:
+            if _t.hp and _t.mp:
                 main.mp = 0
                 _t.mp *= 3
                 utils.slow_type(
