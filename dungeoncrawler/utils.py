@@ -68,7 +68,7 @@ def slow_type(t):
         sys.stdout.write(letter)
         sys.stdout.flush()
         if letter in ". ":
-            interval = 20
+            interval = 10
         else:
             interval = 10
         time.sleep(random.random() * interval / typing_speed)
