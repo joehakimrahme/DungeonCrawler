@@ -18,7 +18,7 @@ from dungeoncrawler import skills
 from dungeoncrawler import utils
 
 
-attack_ability = skills.ATK()
+attack_ability = skills.ATTACK
 
 
 class Fighter(object):
@@ -117,9 +117,9 @@ class Hero(Fighter):
         _c = []
         for skill in self.skills:
             if self.mp >= skill.mp_cost:
-                _c.append(skill)
+                _c.append(skill(world, self))
         if not _c:
-            return attack_ability
+            return attack_ability(world, self)
         return random.choice(_c)
 
 
@@ -136,9 +136,10 @@ class Mob(Fighter):
 
     def choice(self, world):
         for s in self.skills:
-            if s.predicate(world):
-                return s
-        return attack_ability
+            _candidate = s(world, self)
+            if _candidate.predicate(world):
+                return _candidate
+        return attack_ability(world, self)
 
     def bars(self):
         _currentHP = str(int(self.hp))
@@ -160,8 +161,8 @@ wizard_dict = {
     'SPD': 7,
 }
 wizard_skills = [
-    skills.NovaBlast(),
-    skills.Focus(),
+    skills.NovaBlast,
+    skills.Focus,
 ]
 
 HEROES.append(Hero('wizard', wizard_dict, wizard_skills))
@@ -175,8 +176,8 @@ cleric_dict = {
     'SPD': 3,
 }
 cleric_skills = [
-    skills.Heal(),
-    skills.SilentPrayer(),
+    skills.WellIntentionedWish,
+    skills.SilentPrayer,
 ]
 HEROES.append(Hero('cleric', cleric_dict, cleric_skills))
 
@@ -189,8 +190,8 @@ monk_dict = {
     'SPD': 9,
 }
 monk_skills = [
-    skills.ThousandFists(),
-    skills.BurstingQi(),
+    skills.ThousandFists,
+    skills.BurstingQi,
 ]
 HEROES.append(Hero('monk', monk_dict, monk_skills))
 
@@ -203,8 +204,8 @@ ninja_dict = {
     'SPD': 5,
 }
 ninja_skills = [
-    skills.CuriousBox(),
-    skills.BootyTrap(),
+    skills.CuriousBox,
+    skills.BootyTrap,
 ]
 HEROES.append(Hero('ninja', ninja_dict, ninja_skills))
 
@@ -217,8 +218,8 @@ knight_dict = {
     'SPD': 4
 }
 knight_skills = [
-    skills.RighteousInspiration(),
-    skills.ChivalrousProtection(),
+    skills.RighteousInspiration,
+    skills.ChivalrousProtection,
 ]
 HEROES.append(Hero('knight', knight_dict, knight_skills))
 
@@ -242,9 +243,9 @@ bartender_dict = {
     'SPR': 1.3,
     'SPD': 1
 }
-bartender_skills = [skills.AngryOwner(),
-                    skills.BubblyPickMeUp(),
-                    skills.TemporaryInsanity()]
+bartender_skills = [skills.AngryOwner,
+                    skills.BubblyPickMeUp,
+                    skills.TemporaryInsanity]
 
 MOBS.append(Mob('Charging Drunk A', drunk_dict, drunk_skills))
 MOBS.append(Mob('Charging Drunk B', drunk_dict, drunk_skills))

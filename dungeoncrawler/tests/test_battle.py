@@ -24,8 +24,8 @@ class BattleTest(unittest.TestCase):
 
     def setUp(self):
         self.team = [
-            utils.create_neutral_hero(skills=[skills.Heal()]),
-            utils.create_neutral_hero(skills=[skills.Heal()]),
+            utils.create_neutral_hero(skills=[skills.WellIntentionedWish]),
+            utils.create_neutral_hero(skills=[skills.WellIntentionedWish]),
         ]
         self.mobs = [
             utils.create_neutral_mob(),
@@ -70,27 +70,30 @@ class BattleTest(unittest.TestCase):
     def test_generate_choice_zero_mp(self):
         result = self.battle.generate_choices(self.battle)
         for key in result:
-            self.assertEqual(result[key], skills.ATK(), (result, key))
+            self.assertIsInstance(result[key], skills.ATTACK, (result, key))
 
     def test_generate_choice_full_mp(self):
         for f in self.battle.yourteam:
             f.mp += f.maxMP
         result = self.battle.generate_choices(self.battle)
         for key in self.battle.yourteam:
-            self.assertEqual(result[key.name], skills.Heal(), (result, key))
+            self.assertIsInstance(result[key.name], skills.WellIntentionedWish,
+                                  (result, key))
         for key in self.battle.enemyteam:
-            self.assertEqual(result[key.name], skills.ATK(), (result, key))
+            self.assertIsInstance(result[key.name], skills.ATTACK,
+                                  (result, key))
 
     def test_generate_choice_mob(self):
-        self.battle.enemyteam[0].skills = [skills.BubblyPickMeUp()]
-        self.battle.enemyteam[1].skills = [skills.BubblyPickMeUp()]
+        self.battle.enemyteam[0].skills = [skills.BubblyPickMeUp]
+        self.battle.enemyteam[1].skills = [skills.BubblyPickMeUp]
         self.battle.enemyteam[1].hp -= 300
         result = self.battle.generate_choices(self.battle)
-        self.assertEqual(
-            result[self.battle.enemyteam[0].name], skills.BubblyPickMeUp())
+        self.assertIsInstance(
+            result[self.battle.enemyteam[0].name], skills.BubblyPickMeUp)
         self.battle.enemyteam[1].hp += 300
         result = self.battle.generate_choices(self.battle)
-        self.assertEqual(result[self.battle.enemyteam[0].name], skills.ATK())
+        self.assertIsInstance(
+            result[self.battle.enemyteam[0].name], skills.ATTACK)
 
     @patch('dungeoncrawler.battle.input')
     def test_generate_combo(self, mock_input):
@@ -103,8 +106,8 @@ class BattleTest(unittest.TestCase):
     def test_execute_step(self, slow_type):
         combo = [self.team[0], self.mobs[0]]
         choices = {
-            combo[0].name: skills.ATK(),
-            combo[1].name: skills.ATK(),
+            combo[0].name: skills.ATTACK(self.battle, combo[0]),
+            combo[1].name: skills.ATTACK(self.battle, combo[1]),
         }
         _ = self.battle.execute_step(combo, choices)
         self.assertLess(self.team[0].hp_ratio, 100)

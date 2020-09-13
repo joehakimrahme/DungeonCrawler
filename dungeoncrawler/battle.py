@@ -169,7 +169,7 @@ You dead. You lose. Try to do better next time.
             if h.hp:
                 _c = choices[h.name]
                 if h.mp_ratio == 100:
-                    _c = utils.color(_c.name, 'bold')
+                    _c = utils.color(str(_c), 'bold')
                 print(
                     "%d %-22s %s %s" %
                     (i + 1, utils.color(h.name, 'bold'),
@@ -216,7 +216,7 @@ You dead. You lose. Try to do better next time.
     def execute_step(self, combo, choices):
         for h in combo:
             if h.hp:
-                choices[h.name].effect(self, h, combo)
+                choices[h.name].effect(combo)
             # execute end-of-step
             for mob in self.enemyteam:
                 if mob.hp == 0:
@@ -241,7 +241,7 @@ You dead. You lose. Try to do better next time.
 
 
 def main():
-    print("""
+    print(r"""
   888888                  d8b
     "88b                  88P
      888                  8P
@@ -295,6 +295,33 @@ def main():
 """)
     a = Battle(hero.HEROES, hero.MOBS)
     a.battle_loop()
+
+def main():
+    a = Battle(hero.HEROES, hero.MOBS)
+    a.battle_loop()
+
+
+def display_stats(heroes):
+    def print_bar(stat, ratio):
+        print("%3s: %s" % (
+            stat, utils.bars(size=20, color_fill="white", ratio=ratio * 100)))
+    _maxHP = max((h.maxHP for h in heroes))
+    _maxMP = max((h.maxMP for h in heroes))
+    _maxATK = max((h.ATK for h in heroes))
+    _maxMAG = max((h.MAG for h in heroes))
+    _maxDEF = max((h.DEF for h in heroes))
+    _maxSPR = max((h.SPR for h in heroes))
+    _maxSPD = max((h.SPD for h in heroes))
+    for h in heroes:
+        print()
+        print(h.name)
+        print_bar('HP', h.maxHP / _maxHP)
+        print_bar('MP', h.maxMP / _maxMP)
+        print_bar('ATK', h.ATK / _maxATK)
+        print_bar('MAG', h.MAG / _maxMAG)
+        print_bar('DEF', h.DEF / _maxDEF)
+        print_bar('SPR', h.SPR / _maxSPR)
+        print_bar('SPD', h.SPD / _maxSPD)
 
 
 if __name__ == "__main__":

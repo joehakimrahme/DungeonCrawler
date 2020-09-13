@@ -43,14 +43,14 @@ class FighterTest(unittest.TestCase):
                 'SPR': 1,
                 'SPD': 1
             },
-            skills=(skills.Heal(),))
+            skills=(skills.WellIntentionedWish,))
 
     def test_fighter_maxMP(self):
         """maxMP is equal the highest mp_cost of a fighter's skills. Or 999 if
         no skills are found.
 
         """
-        _cost = skills.Heal().mp_cost
+        _cost = skills.WellIntentionedWish.mp_cost
         self.assertEqual(self.fighter.maxMP, _cost)
 
         _old_skills = self.fighter.skills
@@ -93,7 +93,7 @@ class HeroTest(FighterTest):
                 'SPR': 1,
                 'SPD': 1
             },
-            skills=(skills.Heal(),))
+            skills=(skills.WellIntentionedWish,))
 
 
 class MobTest(FighterTest):

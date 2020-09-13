@@ -13,25 +13,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import abc
 import random
 
 from dungeoncrawler import utils
 
 
-class Ability(object):
+class Ability(abc.ABC):
+    mp_cost = 100
 
-    def __init__(self, name, mp_cost=0):
-        self.name = name
-        self.mp_cost = mp_cost
+    def __init__(self, world, caster):
+        self.world = world
+        self.caster = caster
 
     def __repr__(self):
-        return self.name
+        return str(type(self).__name__)
 
-    def __eq__(self, ability):
-        return self.name == ability.name
+    def predicate(self, world):
+        return True
 
-    def effect(self, world, main, combo):
-        utils.slow_type("%s: %s\n" % (main.name, self.name))
+    def effect(self, combo):
+        raise NotImplementedError()
 
     def physical_damage(self, source, target, multiplier):
         return int((source.ATK**2) / target.DEF * multiplier)
@@ -47,17 +49,15 @@ class Ability(object):
     def magical_damage(self, source, target, multiplier):
         return int(source.MAG**2 / target.SPR * multiplier)
 
-    def predicate(self, world):
-        return True
 
+class ATTACK(Ability):
+    mp_cost = 0
 
-class ATK(Ability):
-    def __init__(self):
-        super(ATK, self).__init__(name='ATTACK')
-
-    def effect(self, world, main, combo):
+    def effect(self, combo):
         _targets = []
-        _combo_targets = set(world.rivals(main)) & {h for h in combo if h.hp}
+        _rivals_set = set(self.world.rivals(self.caster))
+        _alive_in_combo_set = {h for h in combo if h.hp}
+        _combo_targets = _rivals_set & _alive_in_combo_set
         if _combo_targets:
             sorted_hp = sorted(_combo_targets, key=lambda x: x.hp)
             if len(sorted_hp) > 1:
@@ -66,278 +66,257 @@ class ATK(Ability):
                 _targets.append(sorted_hp[0])
         dmg = 0
         for _t in _targets:
-            dmg = self.physical_damage(main, _t, 1)
+            dmg = self.physical_damage(self.caster, _t, 1)
             _oldt = _t.hp
             _t.hp -= dmg
 
             # coloring
-            if main in world.yourteam:
+            if self.caster in self.world.yourteam:
                 color = utils.color_green
             else:
                 color = utils.color_red
 
             utils.slow_type("%s: swings at %s dealing %s dmg. (%d -> %d)\n" % (
-                utils.bold(color(main.name)),
+                utils.bold(color(self.caster.name)),
                 _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
             _mp_gain = dmg * 0.3
             if _t.hp:
                 _t.mp += 60 if _mp_gain > 60 else _mp_gain
-            main.mp += 30 if _mp_gain > 30 else _mp_gain
+            self.caster.mp += 30 if _mp_gain > 30 else _mp_gain
 
 
-class Heal(Ability):
-    def __init__(self):
-        super(Heal, self).__init__(name='A Well Intentioned Wish', mp_cost=70)
+class WellIntentionedWish(Ability):
+    mp_cost = 70
 
-    def effect(self, world, main, combo):
+    def effect(self, combo):
         _targets = []
         _combo_targets = []
-        for h in world.yourteam:
+        for h in self.world.yourteam:
             if h in combo and h.hp:
                 _combo_targets.append(h)
         if not _combo_targets:
-            _combo_targets = world.yourteam
+            _combo_targets = self.world.yourteam
 
         if _combo_targets:
-            main.mp = 0
+            self.caster.mp = 0
             _targets.append(min(_combo_targets, key=lambda x: x.hp_ratio))
 
         for _t in _targets:
-            dmg = self.healing_damage(main, 3)
+            dmg = self.healing_damage(self.caster, 3)
             _oldt = _t.hp
             _t.hp += dmg
             utils.slow_type("%s: [%s] on %s for %s HP. (%d -> %d)\n" % (
-                utils.bold(utils.color_green(main.name)),
-                utils.color_yellow(self.name),
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)),
                 _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
 class ThousandFists(Ability):
-    def __init__(self):
-        super(ThousandFists, self).__init__(name="A Thousand Fists",
-                                            mp_cost=120)
+    mp_cost = 120
 
-    def effect(self, world, main, combo):
+    def effect(self, combo):
         _targets = []
-        _combo_targets = set(world.rivals(main)) & {h for h in combo if h.hp}
+        _combo_targets = (h for h in self.world.enemyteam if h.hp)
         if _combo_targets:
-            main.mp = 0
+            self.caster.mp = 0
             sorted_hpdef = sorted(_combo_targets,
                                   key=lambda x: x.hp_ratio / (5 * x.DEF))
             if sorted_hpdef:
                 _targets.append(sorted_hpdef[-1])
         for _t in _targets:
-            dmg = self.physical_damage(main, _t, 3)
+            dmg = self.physical_damage(self.caster, _t, 3)
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
                 "%s: [%s] on %s dealing %s dmg"
                 ". (%d -> %d)\n" % (
-                    utils.bold(utils.color_green(main.name)),
-                    utils.color_yellow(self.name),
+                    utils.bold(utils.color_green(self.caster.name)),
+                    utils.color_yellow(str(self)),
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
 class SilentPrayer(Ability):
-    def __init__(self):
-        super(SilentPrayer, self).__init__(name="A Silent Prayer", mp_cost=70)
+    mp_cost = 70
 
-    def effect(self, world, main, combo):
-        _targets = set(world.yourteam) & {h for h in combo if h.hp}
+    def effect(self, combo):
+        _targets = set(self.world.yourteam) & {h for h in combo if h.hp}
         _t = min(_targets, key=lambda x: x.mp_ratio)
-        main.mp = 0
+        self.caster.mp = 0
         _t.mp += _t.maxMP
         utils.slow_type(
             "%s: [%s] on %s restoring full MP.\n" % (
-                utils.bold(utils.color_green(main.name)),
-                utils.color_yellow(self.name), _t.name))
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)), _t.name))
 
 
 class NovaBlast(Ability):
-    def __init__(self):
-        super(NovaBlast, self).__init__(name="Supernova Blast",
-                                        mp_cost=120)
+    mp_cost = 120
 
-    def effect(self, world, main, combo):
-        _targets = world.enemyteam
+    def effect(self, combo):
+        _targets = self.world.enemyteam
         for _t in _targets:
-            main.mp = 0
-            dmg = self.magical_damage(main, _t, 3.5)
+            self.caster.mp = 0
+            dmg = self.magical_damage(self.caster, _t, 3.5)
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
                 "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                    utils.bold(utils.color_green(main.name)),
-                    utils.color_yellow(self.name),
+                    utils.bold(utils.color_green(self.caster.name)),
+                    utils.color_yellow(str(self)),
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
 class Focus(Ability):
-    def __init__(self):
-        super(Focus, self).__init__(name="Sharp Focus", mp_cost=120)
+    mp_cost = 120
 
-    def effect(self, world, main, combo):
-        main.mp = 60
-        main.MAG *= 1.5
-        main.SPD *= 1.5
+    def effect(self, combo):
+        self.caster.mp = 60
+        self.caster.MAG *= 1.5
+        self.caster.SPD *= 1.5
         utils.slow_type("%s: [%s] on self increasing MAG/SPD.\n" % (
-            utils.bold(utils.color_green(main.name)),
-            utils.color_yellow(self.name)))
+            utils.bold(utils.color_green(self.caster.name)),
+            utils.color_yellow(str(self))))
 
 
 class BurstingQi(Ability):
-    def __init__(self):
-        super(BurstingQi, self).__init__(name="Bursting Qi", mp_cost=120)
+    mp_cost = 120
 
-    def effect(self, world, main, combo):
-        main.mp = 60
-        main.ATK *= 1.2
-        main.DEF *= 1.2
+    def effect(self, combo):
+        self.caster.mp = 60
+        self.caster.ATK *= 1.2
+        self.caster.DEF *= 1.2
         utils.slow_type(
             "%s: [%s] on self increase ATK and DEF.\n" % (
-                utils.bold(utils.color_green(main.name)),
-                utils.color_yellow(self.name)))
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self))))
 
 
 class CuriousBox(Ability):
-    def __init__(self):
-        super(CuriousBox, self).__init__(name="A Curious Box", mp_cost=100)
+    mp_cost = 100
 
-    def effect(self, world, main, combo):
-        _targets = [m for m in world.enemyteam if m.hp]
+    def effect(self, combo):
+        _targets = [m for m in self.world.enemyteam if m.hp]
         if _targets:
             _t = random.choice(_targets)
-            main.mp = 0
+            self.caster.mp = 0
             _mult = int((random.random() * random.random() * 3) + 1)
-            dmg = self.hybrid_damage(main, _t, _mult)
+            dmg = self.hybrid_damage(self.caster, _t, _mult)
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
                 "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                    utils.bold(utils.color_green(main.name)),
-                    utils.color_yellow(self.name),
+                    utils.bold(utils.color_green(self.caster.name)),
+                    utils.color_yellow(str(self)),
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
-            if random.random() < 0.6 and any([m.hp for m in world.enemyteam]):
-                self.effect(world, main, combo)
+            if any([m.hp for m in self.world.enemyteam]):
+                if random.random() < 0.6:
+                    self.effect((unit for unit in combo if unit.hp))
 
 
 class BootyTrap(Ability):
-    def __init__(self):
-        super(BootyTrap, self).__init__(name="Booby Trap", mp_cost=100)
+    mp_cost = 100
 
-    def effect(self, world, main, combo):
-        _t = max(world.enemyteam, key=lambda x: x.DEF)
-        if _t:
-            main.mp = 0
+    def effect(self, combo):
+        if self.world.enemyteam:
+            self.caster.mp = 0
+            _t = max(self.world.enemyteam, key=lambda x: x.DEF)
             _oldt = _t.hp
-            dmg = self.hybrid_damage(main, _t, 1.5)
+            dmg = self.hybrid_damage(self.caster, _t, 1.5)
             _t.hp -= dmg
             utils.slow_type(
                 "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                    utils.bold(utils.color_green(main.name)),
-                    utils.color_yellow(self.name),
+                    utils.bold(utils.color_green(self.caster.name)),
+                    utils.color_yellow(str(self)),
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
             if _t.hp:
                 _t.DEF *= 0.8
                 _t.SPR *= 0.8
                 utils.slow_type(
                     "%s: [%s] on %s decreases DEF/SPR.\n" % (
-                        utils.bold(utils.color_green(main.name)),
-                        utils.color_yellow(self.name), _t.name))
+                        utils.bold(utils.color_green(self.caster.name)),
+                        utils.color_yellow(str(self)), _t.name))
 
 
 class ChivalrousProtection(Ability):
-    def __init__(self):
-        super(ChivalrousProtection, self).__init__(
-            name="Chivalrous Protection", mp_cost=100)
+    mp_cost = 100
 
-    def effect(self, world, main, combo):
-        for _t in world.yourteam:
+    def effect(self, combo):
+        for _t in self.world.yourteam:
             if _t.hp:
-                main.mp = 0
+                self.caster.mp = 0
                 _t.DEF *= 1.8
                 _t.SPR *= 1.8
                 utils.slow_type(
                     "%s: [%s] on %s increases DEF/SPR.\n" % (
-                        utils.bold(utils.color_green(main.name)),
-                        utils.color_yellow(self.name), _t.name))
+                        utils.bold(utils.color_green(self.caster.name)),
+                        utils.color_yellow(str(self)), _t.name))
 
 
 class RighteousInspiration(Ability):
-    def __init__(self):
-        super(RighteousInspiration, self).__init__(
-            name="Righteous Inspiration", mp_cost=100)
+    mp_cost = 100
 
-    def effect(self, world, main, combo):
-        _targets = [h for h in world.yourteam if (h.mp * h.hp)]
+    def effect(self, combo):
+        _targets = [h for h in self.world.yourteam if (h.mp * h.hp)]
         for _t in _targets:
             if _t.hp and _t.mp:
-                main.mp = 0
+                self.caster.mp = 0
                 _t.mp *= 3
                 utils.slow_type(
                     "%s: [%s] on %s restoring MP.\n" % (
-                        utils.bold(utils.color_green(main.name)),
-                        utils.color_yellow(self.name), _t.name))
+                        utils.bold(utils.color_green(self.caster.name)),
+                        utils.color_yellow(str(self)), _t.name))
 
 
 class BubblyPickMeUp(Ability):
-    def __init__(self):
-        super(BubblyPickMeUp, self).__init__(name="Bubbly Pick-me-up")
-
     def predicate(self, world):
         return any((mob.hp_ratio < 60 for mob in world.enemyteam))
 
-    def effect(self, world, main, combo):
-        _targets = [m for m in world.enemyteam if m.hp]
+    def effect(self, combo):
+        _targets = [m for m in self.world.enemyteam if m.hp]
         for _t in _targets:
-            dmg = self.healing_damage(main, 1.8)
+            dmg = self.healing_damage(self.caster, 1.8)
             _oldt = _t.hp
             _t.hp += dmg
             utils.slow_type(
                 "%s: [%s] on %s healing for %s. (%d -> %d)\n" % (
-                    utils.bold(utils.color_red(main.name)),
-                    utils.color_yellow(self.name),
+                    utils.bold(utils.color_red(self.caster.name)),
+                    utils.color_yellow(str(self)),
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
 
 
 class TemporaryInsanity(Ability):
-    def __init__(self):
-        super(TemporaryInsanity, self).__init__(name="Temporary Insanity")
-
     def predicate(self, world):
         return True
 
-    def effect(self, world, main, combo):
-        _targets = world.enemyteam
+    def effect(self, combo):
+        _targets = self.world.enemyteam
         for _t in _targets:
             _t.ATK *= 1.35
             utils.slow_type("%s: [%s] on %s increases ATK.\n" % (
-                utils.bold(utils.color_red(main.name)),
-                utils.color_yellow(self.name), _t.name))
+                utils.bold(utils.color_red(self.caster.name)),
+                utils.color_yellow(str(self)), _t.name))
 
 
 class AngryOwner(Ability):
-    def __init__(self):
-        super(AngryOwner, self).__init__(name="Angry Owner")
 
     def predicate(self, world):
         if len(world.enemyteam) == 1:
             return True
 
-    def effect(self, world, main, combo):
-        _targets = [h for h in world.yourteam if h.hp]
+    def effect(self, combo):
+        _targets = [h for h in self.world.yourteam if h.hp]
         for _t in _targets:
-            main.mp = 0
-            dmg = self.hybrid_damage(main, _t, 3.5)
+            self.caster.mp = 0
+            dmg = self.hybrid_damage(self.caster, _t, 3.5)
             _oldt = _t.hp
             _t.hp -= dmg
             utils.slow_type(
                 "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                    utils.bold(utils.color_red(main.name)),
-                    utils.color_yellow(self.name),
+                    utils.bold(utils.color_red(self.caster.name)),
+                    utils.color_yellow(str(self)),
                     _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
-        main.ATK *= 1.35
+        self.caster.ATK *= 1.35
         utils.slow_type(
             "%s: [%s] on self increasing ATK.\n" % (
-                utils.bold(utils.color_red(main.name)),
-                utils.color_yellow(self.name)))
+                utils.bold(utils.color_red(self.caster.name)),
+                utils.color_yellow(str(self))))
