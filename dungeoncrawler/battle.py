@@ -296,10 +296,6 @@ def main():
     a = Battle(hero.HEROES, hero.MOBS)
     a.battle_loop()
 
-def main():
-    a = Battle(hero.HEROES, hero.MOBS)
-    a.battle_loop()
-
 
 def display_stats(heroes):
     def print_bar(stat, ratio):
