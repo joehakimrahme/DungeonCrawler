@@ -161,7 +161,7 @@ You dead. You lose. Try to do better next time.
 
     def display_choice(self, choices):
         print("-" * 90)
-        print("%s %-24s %-22s %-19s %-s" % (
+        print("%s %-24s %-22s %-19s  %-s" % (
             "#", "NAME", "HIT POINTS", "MANA POINTS", "CHOICE")
         )
         print()

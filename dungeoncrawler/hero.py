@@ -116,7 +116,7 @@ class Hero(Fighter):
     def choice(self, world):
         _c = []
         for skill in self.skills:
-            if self.mp >= skill.mp_cost:
+            if skill(world, self).predicate():
                 _c.append(skill(world, self))
         if not _c:
             return attack_ability(world, self)
@@ -137,7 +137,7 @@ class Mob(Fighter):
     def choice(self, world):
         for s in self.skills:
             _candidate = s(world, self)
-            if _candidate.predicate(world):
+            if _candidate.predicate():
                 return _candidate
         return attack_ability(world, self)
 

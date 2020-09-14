@@ -29,11 +29,33 @@ class Ability(abc.ABC):
     def __repr__(self):
         return str(type(self).__name__)
 
-    def predicate(self, world):
-        return True
+    def predicate(self):
+        return self.caster.mp == self.caster.maxMP
 
     def effect(self, combo):
-        raise NotImplementedError()
+        self.opening_words()
+        _targets = self.targets(combo)
+        if _targets:
+            self.caster.mp -= self.mp_cost
+            for _t in _targets:
+                _dmg, _old, _new = self.single_effect(_t)
+                self.log_skill(_dmg, _t, _old, _new)
+        self.closing_words()
+
+    def targets(self, combo):
+        raise NotImplementedError
+
+    def single_effect(self, target):
+        raise NotImplementedError
+
+    def log_skill(self, amount, target, old_value, new_value):
+        raise NotImplementedError
+
+    def opening_words(self):
+        pass
+
+    def closing_words(self):
+        pass
 
     def physical_damage(self, source, target, multiplier):
         return int((source.ATK**2) / target.DEF * multiplier)
@@ -53,7 +75,10 @@ class Ability(abc.ABC):
 class ATTACK(Ability):
     mp_cost = 0
 
-    def effect(self, combo):
+    def predicate(self):
+        return True
+
+    def targets(self, combo):
         _targets = []
         _rivals_set = set(self.world.rivals(self.caster))
         _alive_in_combo_set = {h for h in combo if h.hp}
@@ -64,127 +89,186 @@ class ATTACK(Ability):
                 _targets.append(random.choice(sorted_hp[:2]))
             if len(sorted_hp) == 1:
                 _targets.append(sorted_hp[0])
-        dmg = 0
-        for _t in _targets:
-            dmg = self.physical_damage(self.caster, _t, 1)
-            _oldt = _t.hp
-            _t.hp -= dmg
+        return _targets
 
-            # coloring
-            if self.caster in self.world.yourteam:
-                color = utils.color_green
-            else:
-                color = utils.color_red
+    def single_effect(self, target):
+        dmg = self.physical_damage(self.caster, target, 1)
+        _oldt = target.hp
+        target.hp -= dmg
 
-            utils.slow_type("%s: swings at %s dealing %s dmg. (%d -> %d)\n" % (
-                utils.bold(color(self.caster.name)),
-                _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
-            _mp_gain = dmg * 0.3
-            if _t.hp:
-                _t.mp += 60 if _mp_gain > 60 else _mp_gain
-            self.caster.mp += 30 if _mp_gain > 30 else _mp_gain
+        mp_received = 0.3 * dmg
+        target.mp += mp_received if mp_received < 60 else 60
+        self.caster.mp += mp_received if mp_received < 30 else 30
+        return (dmg, _oldt, target.hp)
+
+    def log_skill(self, amount, target, old_value, new_value):
+        # coloring
+        if self.caster in self.world.yourteam:
+            color = utils.color_green
+        else:
+            color = utils.color_red
+
+        description_low = [
+            "punches", "kicks", "throws a pebble at"
+        ]
+        description_mid = [
+            "lands a blow on", "hits", "swings at"
+        ]
+        description_high = [
+            "lands a powerful blow on", "injures", "maims"
+        ]
+
+        _ratio = amount / old_value
+        if _ratio < 0.1:
+            description = description_low
+        elif 0.1 <= _ratio < 0.25:
+            description = description_mid
+        else:
+            description = description_high
+
+        utils.slow_type("%s: %s %s dealing %s dmg. (%d -> %d)\n" % (
+            utils.bold(color(self.caster.name)),
+            random.choice(description),
+            target.name, utils.bold(str(amount)),
+            old_value, new_value))
 
 
 class WellIntentionedWish(Ability):
     mp_cost = 70
 
-    def effect(self, combo):
+    def targets(self, combo):
         _targets = []
-        _combo_targets = []
-        for h in self.world.yourteam:
-            if h in combo and h.hp:
-                _combo_targets.append(h)
-        if not _combo_targets:
-            _combo_targets = self.world.yourteam
+        for unit in combo:
+            if unit in self.world.yourteam and 0 < unit.hp_ratio < 100:
+                _targets.append(unit)
+        if not _targets:
+            for unit in self.world.yourteam:
+                if unit.hp_ratio < 100:
+                    _targets.append(unit)
+        if not _targets:
+            _targets.append(self.caster)
 
-        if _combo_targets:
-            self.caster.mp = 0
-            _targets.append(min(_combo_targets, key=lambda x: x.hp_ratio))
+        return [min(_targets, key=lambda x: x.hp_ratio)]
 
-        for _t in _targets:
-            dmg = self.healing_damage(self.caster, 3)
-            _oldt = _t.hp
-            _t.hp += dmg
-            utils.slow_type("%s: [%s] on %s for %s HP. (%d -> %d)\n" % (
-                utils.bold(utils.color_green(self.caster.name)),
-                utils.color_yellow(str(self)),
-                _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
+    def single_effect(self, target):
+        dmg = self.healing_damage(self.caster, 3)
+        _oldt = target.hp
+        target.hp += dmg
+        return (dmg, _oldt, target.hp)
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type("%s: [%s] on %s for %s HP. (%d -> %d)\n" % (
+            utils.bold(utils.color_green(self.caster.name)),
+            utils.color_yellow(str(self)),
+            target.name, utils.bold(str(amount)), old_value, new_value))
 
 
 class ThousandFists(Ability):
     mp_cost = 120
 
-    def effect(self, combo):
-        _targets = []
-        _combo_targets = (h for h in self.world.enemyteam if h.hp)
-        if _combo_targets:
-            self.caster.mp = 0
-            sorted_hpdef = sorted(_combo_targets,
-                                  key=lambda x: x.hp_ratio / (5 * x.DEF))
-            if sorted_hpdef:
-                _targets.append(sorted_hpdef[-1])
-        for _t in _targets:
-            dmg = self.physical_damage(self.caster, _t, 3)
-            _oldt = _t.hp
-            _t.hp -= dmg
-            utils.slow_type(
-                "%s: [%s] on %s dealing %s dmg"
-                ". (%d -> %d)\n" % (
-                    utils.bold(utils.color_green(self.caster.name)),
-                    utils.color_yellow(str(self)),
-                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
+    def targets(self, combo):
+        _targets = (h for h in self.world.enemyteam if h.hp)
+        sorted_hp_def = min(_targets,
+                            key=lambda x: x.hp_ratio / (5 * x.DEF))
+        return [sorted_hp_def]
+
+    def single_effect(self, target):
+        dmg = self.physical_damage(self.caster, target, 3)
+        _oldt = target.hp
+        target.hp -= dmg
+        return (dmg, _oldt, target.hp)
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type(
+            "%s: [%s] on %s dealing %s dmg"
+            ". (%d -> %d)\n" % (
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)),
+                target.name, utils.bold(str(amount)),
+                old_value, new_value))
 
 
 class SilentPrayer(Ability):
     mp_cost = 70
 
-    def effect(self, combo):
+    def targets(self, combo):
         _targets = set(self.world.yourteam) & {h for h in combo if h.hp}
-        _t = min(_targets, key=lambda x: x.mp_ratio)
-        self.caster.mp = 0
-        _t.mp += _t.maxMP
+        return [min(_targets, key=lambda x: x.mp_ratio)]
+
+    def single_effect(self, target):
+        _oldt = target.mp
+        target.mp += target.maxMP
+        return (target.mp - _oldt, _oldt, target.mp)
+
+    def log_skill(self, amount, target, old_value, new_value):
         utils.slow_type(
             "%s: [%s] on %s restoring full MP.\n" % (
                 utils.bold(utils.color_green(self.caster.name)),
-                utils.color_yellow(str(self)), _t.name))
+                utils.color_yellow(str(self)), target.name))
 
 
 class NovaBlast(Ability):
     mp_cost = 120
 
-    def effect(self, combo):
-        _targets = self.world.enemyteam
-        for _t in _targets:
-            self.caster.mp = 0
-            dmg = self.magical_damage(self.caster, _t, 3.5)
-            _oldt = _t.hp
-            _t.hp -= dmg
-            utils.slow_type(
-                "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                    utils.bold(utils.color_green(self.caster.name)),
-                    utils.color_yellow(str(self)),
-                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
+    def opening_words(self):
+        print(r"""
+  /$$$$$$  /$$   /$$ /$$$$$$$  /$$$$$$$$ /$$$$$$$  /$$   /$$  /$$$$$$  /$$    /$$  /$$$$$$
+ /$$__  $$| $$  | $$| $$__  $$| $$_____/| $$__  $$| $$$ | $$ /$$__  $$| $$   | $$ /$$__  $$
+| $$  \__/| $$  | $$| $$  \ $$| $$      | $$  \ $$| $$$$| $$| $$  \ $$| $$   | $$| $$  \ $$
+|  $$$$$$ | $$  | $$| $$$$$$$/| $$$$$   | $$$$$$$/| $$ $$ $$| $$  | $$|  $$ / $$/| $$$$$$$$
+ \____  $$| $$  | $$| $$____/ | $$__/   | $$__  $$| $$  $$$$| $$  | $$ \  $$ $$/ | $$__  $$
+ /$$  \ $$| $$  | $$| $$      | $$      | $$  \ $$| $$\  $$$| $$  | $$  \  $$$/  | $$  | $$
+|  $$$$$$/|  $$$$$$/| $$      | $$$$$$$$| $$  | $$| $$ \  $$|  $$$$$$/   \  $/   | $$  | $$
+ \______/  \______/ |__/      |________/|__/  |__/|__/  \__/ \______/     \_/    |__/  |__/
+""")  # noqa: E501
+
+    def targets(self, combo):
+        return self.world.enemyteam
+
+    def single_effect(self, target):
+        dmg = self.magical_damage(self.caster, target, 3.5)
+        _oldt = target.hp
+        target.hp -= dmg
+        return (dmg, _oldt, target.hp)
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type(
+            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)),
+                target.name, utils.bold(str(amount)),
+                old_value, target.hp))
 
 
 class Focus(Ability):
-    mp_cost = 120
+    mp_cost = 60
 
-    def effect(self, combo):
-        self.caster.mp = 60
-        self.caster.MAG *= 1.5
-        self.caster.SPD *= 1.5
+    def targets(self, combo):
+        return [self.caster]
+
+    def single_effect(self, target):
+        target.MAG *= 1.5
+        target.SPD *= 1.5
+        return ('', '', '')
+
+    def log_skill(self, amount, target, old_value, new_value):
         utils.slow_type("%s: [%s] on self increasing MAG/SPD.\n" % (
             utils.bold(utils.color_green(self.caster.name)),
             utils.color_yellow(str(self))))
 
 
 class BurstingQi(Ability):
-    mp_cost = 120
+    mp_cost = 80
 
-    def effect(self, combo):
-        self.caster.mp = 60
-        self.caster.ATK *= 1.2
-        self.caster.DEF *= 1.2
+    def targets(self, combo):
+        return [self.caster]
+
+    def single_effect(self, target):
+        target.ATK *= 1.2
+        target.DEF *= 1.2
+        return ('', '', '')
+
+    def log_skill(self, amount, target, old_value, new_value):
         utils.slow_type(
             "%s: [%s] on self increase ATK and DEF.\n" % (
                 utils.bold(utils.color_green(self.caster.name)),
@@ -192,131 +276,162 @@ class BurstingQi(Ability):
 
 
 class CuriousBox(Ability):
-    mp_cost = 100
+    mp_cost = (random.random() + 0.5) * 100
 
-    def effect(self, combo):
-        _targets = [m for m in self.world.enemyteam if m.hp]
-        if _targets:
-            _t = random.choice(_targets)
-            self.caster.mp = 0
-            _mult = int((random.random() * random.random() * 3) + 1)
-            dmg = self.hybrid_damage(self.caster, _t, _mult)
-            _oldt = _t.hp
-            _t.hp -= dmg
-            utils.slow_type(
-                "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                    utils.bold(utils.color_green(self.caster.name)),
-                    utils.color_yellow(str(self)),
-                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
-            if any([m.hp for m in self.world.enemyteam]):
-                if random.random() < 0.6:
-                    self.effect((unit for unit in combo if unit.hp))
+    def targets(self, combo):
+        _targets = []
+        while True:
+            _targets.append(random.choice(self.world.enemyteam))
+            if any((m.hp for m in self.world.enemyteam)):
+                if random.random() > 0.6:
+                    break
+        return _targets
+
+    def single_effect(self, target):
+        _mult = int((random.random() * random.random() * 3) + 1.3)
+        dmg = self.hybrid_damage(self.caster, target, _mult)
+        _oldt = target.hp
+        target.hp -= dmg
+        return (dmg, _oldt, target.hp)
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type(
+            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)),
+                target.name, utils.bold(str(amount)),
+                old_value, new_value))
 
 
 class BootyTrap(Ability):
     mp_cost = 100
 
-    def effect(self, combo):
-        if self.world.enemyteam:
-            self.caster.mp = 0
-            _t = max(self.world.enemyteam, key=lambda x: x.DEF)
-            _oldt = _t.hp
-            dmg = self.hybrid_damage(self.caster, _t, 1.5)
-            _t.hp -= dmg
-            utils.slow_type(
-                "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                    utils.bold(utils.color_green(self.caster.name)),
-                    utils.color_yellow(str(self)),
-                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
-            if _t.hp:
-                _t.DEF *= 0.8
-                _t.SPR *= 0.8
-                utils.slow_type(
-                    "%s: [%s] on %s decreases DEF/SPR.\n" % (
-                        utils.bold(utils.color_green(self.caster.name)),
-                        utils.color_yellow(str(self)), _t.name))
+    def targets(self, combo):
+        return [max(self.world.enemyteam, key=lambda x: x.DEF)]
+
+    def single_effect(self, target):
+        dmg = self.hybrid_damage(self.caster, target, 1.5)
+        _oldt = target.hp
+        target.hp -= dmg
+        target.DEF *= 0.7
+        target.SPR *= 0.7
+        return (dmg, _oldt, target.hp)
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type(
+            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)),
+                target.name, utils.bold(str(amount)),
+                old_value, target.hp))
+        utils.slow_type(
+            "%s: [%s] on %s decreases DEF/SPR.\n" % (
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)), target.name))
 
 
 class ChivalrousProtection(Ability):
     mp_cost = 100
 
-    def effect(self, combo):
-        for _t in self.world.yourteam:
-            if _t.hp:
-                self.caster.mp = 0
-                _t.DEF *= 1.8
-                _t.SPR *= 1.8
-                utils.slow_type(
-                    "%s: [%s] on %s increases DEF/SPR.\n" % (
-                        utils.bold(utils.color_green(self.caster.name)),
-                        utils.color_yellow(str(self)), _t.name))
+    def targets(self, combo):
+        return self.world.yourteam
+
+    def single_effect(self, target):
+        target.DEF *= 1.8
+        target.SPR *= 1.8
+        return ('', '', '')
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type(
+            "%s: [%s] on %s increases DEF/SPR.\n" % (
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)), target.name))
 
 
 class RighteousInspiration(Ability):
     mp_cost = 100
 
-    def effect(self, combo):
-        _targets = [h for h in self.world.yourteam if (h.mp * h.hp)]
-        for _t in _targets:
-            if _t.hp and _t.mp:
-                self.caster.mp = 0
-                _t.mp *= 3
-                utils.slow_type(
-                    "%s: [%s] on %s restoring MP.\n" % (
-                        utils.bold(utils.color_green(self.caster.name)),
-                        utils.color_yellow(str(self)), _t.name))
+    def targets(self, combo):
+        return [h for h in self.world.yourteam if (h.mp * h.hp)]
+
+    def single_effect(self, target):
+        target.mp *= 3
+        return ('', '', '')
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type(
+            "%s: [%s] on %s restoring MP.\n" % (
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)), target.name))
 
 
 class BubblyPickMeUp(Ability):
-    def predicate(self, world):
-        return any((mob.hp_ratio < 60 for mob in world.enemyteam))
+    def predicate(self):
+        return any((mob.hp_ratio < 60 for mob in self.world.enemyteam))
 
-    def effect(self, combo):
-        _targets = [m for m in self.world.enemyteam if m.hp]
-        for _t in _targets:
-            dmg = self.healing_damage(self.caster, 1.8)
-            _oldt = _t.hp
-            _t.hp += dmg
-            utils.slow_type(
-                "%s: [%s] on %s healing for %s. (%d -> %d)\n" % (
-                    utils.bold(utils.color_red(self.caster.name)),
-                    utils.color_yellow(str(self)),
-                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
+    def targets(self, combo):
+        return [m for m in self.world.enemyteam if m.hp]
+
+    def single_effect(self, target):
+        dmg = self.healing_damage(self.caster, 1.8)
+        _oldt = target.hp
+        target.hp += dmg
+        return (dmg, _oldt, target.hp)
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type(
+            "%s: [%s] on %s healing for %s. (%d -> %d)\n" % (
+                utils.bold(utils.color_red(self.caster.name)),
+                utils.color_yellow(str(self)),
+                target.name, utils.bold(str(amount)), old_value, new_value))
 
 
 class TemporaryInsanity(Ability):
-    def predicate(self, world):
+    def predicate(self):
         return True
 
-    def effect(self, combo):
-        _targets = self.world.enemyteam
-        for _t in _targets:
-            _t.ATK *= 1.35
-            utils.slow_type("%s: [%s] on %s increases ATK.\n" % (
-                utils.bold(utils.color_red(self.caster.name)),
-                utils.color_yellow(str(self)), _t.name))
+    def targets(self, combo):
+        return self.world.enemyteam
+
+    def single_effect(self, target):
+        target.ATK *= 1.35
+        return ('', '', '')
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type("%s: [%s] on %s increases ATK.\n" % (
+            utils.bold(utils.color_red(self.caster.name)),
+            utils.color_yellow(str(self)), target.name))
 
 
 class AngryOwner(Ability):
 
-    def predicate(self, world):
-        if len(world.enemyteam) == 1:
+    def predicate(self):
+        if len(self.world.enemyteam) == 1:
             return True
 
-    def effect(self, combo):
-        _targets = [h for h in self.world.yourteam if h.hp]
-        for _t in _targets:
-            self.caster.mp = 0
-            dmg = self.hybrid_damage(self.caster, _t, 3.5)
-            _oldt = _t.hp
-            _t.hp -= dmg
-            utils.slow_type(
-                "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                    utils.bold(utils.color_red(self.caster.name)),
-                    utils.color_yellow(str(self)),
-                    _t.name, utils.bold(str(dmg)), _oldt, _t.hp))
+    def opening_words(self):
+        utils.slow_type("The Owner's here, and he's not happy!!!\n")
+
+    def closing_words(self):
         self.caster.ATK *= 1.35
         utils.slow_type(
             "%s: [%s] on self increasing ATK.\n" % (
                 utils.bold(utils.color_red(self.caster.name)),
                 utils.color_yellow(str(self))))
+
+    def targets(self, combo):
+        return self.world.yourteam
+
+    def single_effect(self, target):
+        dmg = self.hybrid_damage(self.caster, target, 3.5)
+        _oldt = target.hp
+        target.hp -= dmg
+        return (dmg, _oldt, target.hp)
+
+    def log_skill(self, amount, target, old_value, new_value):
+        utils.slow_type(
+            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
+                utils.bold(utils.color_red(self.caster.name)),
+                utils.color_yellow(str(self)),
+                target.name, utils.bold(str(amount)),
+                old_value, new_value))

@@ -130,7 +130,7 @@ class SilentPrayerTest(unittest.TestCase):
         world = mock.Mock()
         world.yourteam = self.team
         self.ability(world, self.team[0]).effect(self.team)
-        self.assertEqual(self.team[0].mp, 0)
+        self.assertLess(self.team[0].mp, self.team[0].maxMP)
         self.assertEqual(self.team[1].mp_ratio, 100)
 
 
@@ -161,7 +161,8 @@ class NovaBlastTest(unittest.TestCase):
         self.ability = skills.NovaBlast
 
     @patch('dungeoncrawler.utils.slow_type')
-    def test_novablast_effect(self, slow_type):
+    @patch('dungeoncrawler.skills.print')
+    def test_novablast_effect(self, slow_type, print):
         world = mock.Mock()
         world.enemyteam = self.mobs
         _oldt = [h.hp for h in world.enemyteam]
