@@ -2,3 +2,5 @@
 .tox
 .venv
 *.egg-info
+.coverage
+htmlcov
