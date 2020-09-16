@@ -192,7 +192,12 @@ class SilentPrayer(Ability):
     mp_cost = 70
 
     def targets(self, combo):
-        _targets = set(self.world.yourteam) & {h for h in combo if h.hp}
+        _targets = []
+        for hero in self.world.yourteam:
+            if hero.hp and hero in combo and hero.mp_ratio < 100:
+                _targets.append(hero)
+        if not _targets:
+            _targets.append(self.caster)
         return [min(_targets, key=lambda x: x.mp_ratio)]
 
     def single_effect(self, target):
@@ -281,7 +286,8 @@ class CuriousBox(Ability):
     def targets(self, combo):
         _targets = []
         while True:
-            _targets.append(random.choice(self.world.enemyteam))
+            _enemies = [m for m in self.world.enemyteam if m.hp]
+            _targets.append(random.choice(_enemies))
             if any((m.hp for m in self.world.enemyteam)):
                 if random.random() > 0.6:
                     break
@@ -415,12 +421,12 @@ class AngryOwner(Ability):
     def closing_words(self):
         self.caster.ATK *= 1.35
         utils.slow_type(
-            "%s: [%s] on self increasing ATK.\n" % (
+            "%s: [%s] on himself increasing ATK.\n" % (
                 utils.bold(utils.color_red(self.caster.name)),
                 utils.color_yellow(str(self))))
 
     def targets(self, combo):
-        return self.world.yourteam
+        return (h for h in self.world.yourteam if h.hp)
 
     def single_effect(self, target):
         dmg = self.hybrid_damage(self.caster, target, 3.5)
