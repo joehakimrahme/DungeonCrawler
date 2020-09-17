@@ -153,9 +153,9 @@ class Mob(Fighter):
 HEROES = []
 
 wizard_dict = {
-    'HP': 1.2,
+    'HP': 1.4,
     'ATK': 0.6,
-    'DEF': 0.9,
+    'DEF': 0.8,
     'MAG': 1.2,
     'SPR': 1.3,
     'SPD': 7,

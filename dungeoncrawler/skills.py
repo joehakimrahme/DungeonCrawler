@@ -168,9 +168,10 @@ class ThousandFists(Ability):
 
     def targets(self, combo):
         _targets = (h for h in self.world.enemyteam if h.hp)
-        sorted_hp_def = min(_targets,
-                            key=lambda x: x.hp_ratio / (5 * x.DEF))
-        return [sorted_hp_def]
+        if _targets:
+            sorted_hp_def = min(_targets,
+                                key=lambda x: x.hp_ratio / (5 * x.DEF))
+            return [sorted_hp_def]
 
     def single_effect(self, target):
         dmg = self.physical_damage(self.caster, target, 3)
@@ -281,12 +282,14 @@ class BurstingQi(Ability):
 
 
 class CuriousBox(Ability):
-    mp_cost = (random.random() + 0.5) * 100
+    mp_cost = 100
 
     def targets(self, combo):
         _targets = []
         while True:
             _enemies = [m for m in self.world.enemyteam if m.hp]
+            if not _enemies:
+                break
             _targets.append(random.choice(_enemies))
             if any((m.hp for m in self.world.enemyteam)):
                 if random.random() > 0.6:
@@ -313,7 +316,9 @@ class BootyTrap(Ability):
     mp_cost = 100
 
     def targets(self, combo):
-        return [max(self.world.enemyteam, key=lambda x: x.DEF)]
+        eligible = [m for m in self.world.enemyteam if m.hp]
+        if eligible:
+            return [max(eligible, key=lambda x: x.DEF)]
 
     def single_effect(self, target):
         dmg = self.hybrid_damage(self.caster, target, 1.5)
@@ -379,7 +384,7 @@ class BubblyPickMeUp(Ability):
         return [m for m in self.world.enemyteam if m.hp]
 
     def single_effect(self, target):
-        dmg = self.healing_damage(self.caster, 1.8)
+        dmg = self.healing_damage(self.caster, 1)
         _oldt = target.hp
         target.hp += dmg
         return (dmg, _oldt, target.hp)
