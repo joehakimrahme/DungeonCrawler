@@ -14,7 +14,6 @@
 #    under the License.
 import random
 import re
-import readline
 
 from dungeoncrawler import hero
 from dungeoncrawler import utils
@@ -187,7 +186,6 @@ You dead. You lose. Try to do better next time.
     def generate_combo(self):
         while True:
             try:
-                readline.parse_and_bind('tab: complete')
                 cmd = input("Pick your combo> ")
                 cmd = cmd.strip()
                 if cmd == "q":
@@ -238,6 +236,7 @@ You dead. You lose. Try to do better next time.
             # execute end-of-turn
         print(self.outro(win))
         input()
+        return win
 
 
 def main():

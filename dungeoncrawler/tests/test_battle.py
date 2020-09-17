@@ -12,10 +12,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import random
 import unittest
 from unittest.mock import patch
 
 from dungeoncrawler import battle
+from dungeoncrawler import hero
 from dungeoncrawler import skills
 from dungeoncrawler import utils
 
@@ -112,3 +114,40 @@ class BattleTest(unittest.TestCase):
         _ = self.battle.execute_step(combo, choices)
         self.assertLess(self.team[0].hp_ratio, 100)
         self.assertLess(self.mobs[0].hp_ratio, 100)
+
+
+def random_input(prompt=None):
+    alphabet = [
+        '1', '12', '123', '124', '125', '13', '134', '135', '14', '145', '15',
+        '2', '23', '234', '235', '24', '245', '25', '3', '34', '345', '35',
+        '4', '45', '5',
+    ]
+    return random.choice(alphabet)
+
+
+class RandomBattlesTest(unittest.TestCase):
+
+    @patch('builtins.input', random_input)
+    @patch('builtins.print')
+    @patch('dungeoncrawler.utils.slow_type')
+    def test_100random_battle(self, print, slow_type):
+        sample = 100
+        wins = 0
+        for _ in range(sample):
+            _heroes = [
+                hero.Hero('wizard', hero.wizard_dict, hero.wizard_skills),
+                hero.Hero('cleric', hero.cleric_dict, hero.cleric_skills),
+                hero.Hero('monk', hero.monk_dict, hero.monk_skills),
+                hero.Hero('ninja', hero.ninja_dict, hero.ninja_skills),
+                hero.Hero('knight', hero.knight_dict, hero.knight_skills)
+            ]
+            _mobs = [
+                hero.Mob('Charging Drunk A', hero.drunk_dict,
+                         hero.drunk_skills),
+                hero.Mob('Charging Drunk B', hero.drunk_dict,
+                         hero.drunk_skills),
+                hero.Mob('Crazed Bartender', hero.bartender_dict,
+                         hero.bartender_skills)
+            ]
+            if battle.Battle(_heroes, _mobs).battle_loop():
+                wins += 1
