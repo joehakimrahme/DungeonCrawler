@@ -302,6 +302,7 @@ class BurstingQi(Ability):
 
 class CuriousBox(Ability):
     mp_cost = 100
+    name = "Curious Box"
 
     def targets(self, combo):
         _targets = []
