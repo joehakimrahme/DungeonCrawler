@@ -183,10 +183,10 @@ You dead. You lose. Try to do better next time.
         print("-" * 90)
         print()
 
-    def generate_combo(self):
+    def generate_combo(self, turn):
         while True:
             try:
-                cmd = input("Pick your combo> ")
+                cmd = input("[%s] Pick your combo> " % turn)
                 cmd = cmd.strip()
                 if cmd == "q":
                     break
@@ -222,6 +222,7 @@ You dead. You lose. Try to do better next time.
 
     def battle_loop(self):
         utils.slow_type(self.intro)
+        turn = 0
         # Execute start-of-battle
         while True:
             win = self.check_for_win()
@@ -229,11 +230,12 @@ You dead. You lose. Try to do better next time.
                 break
             choices = self.generate_choices(self)
             self.display_choice(choices)
-            combo = self.generate_combo()
+            combo = self.generate_combo(turn)
             self.execute_step(combo, choices)
             for h in self.yourteam:
                 h.mp += 20
             # execute end-of-turn
+            turn += 1
         print(self.outro(win))
         input()
         return win
