@@ -36,7 +36,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'dcbattle = dungeoncrawler.battle:main',
+            'dcbattle = dungeoncrawler.main:main',
         ]
     }
 )

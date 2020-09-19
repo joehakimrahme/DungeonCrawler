@@ -18,6 +18,7 @@ from unittest.mock import patch
 
 from dungeoncrawler import battle
 from dungeoncrawler import hero
+from dungeoncrawler import main
 from dungeoncrawler import skills
 from dungeoncrawler import utils
 
@@ -135,19 +136,19 @@ class RandomBattlesTest(unittest.TestCase):
         wins = 0
         for _ in range(sample):
             _heroes = [
-                hero.Hero('wizard', hero.wizard_dict, hero.wizard_skills),
-                hero.Hero('cleric', hero.cleric_dict, hero.cleric_skills),
-                hero.Hero('monk', hero.monk_dict, hero.monk_skills),
-                hero.Hero('ninja', hero.ninja_dict, hero.ninja_skills),
-                hero.Hero('knight', hero.knight_dict, hero.knight_skills)
+                hero.Hero('wizard', main.wizard_dict, main.wizard_skills),
+                hero.Hero('cleric', main.cleric_dict, main.cleric_skills),
+                hero.Hero('monk', main.monk_dict, main.monk_skills),
+                hero.Hero('ninja', main.ninja_dict, main.ninja_skills),
+                hero.Hero('knight', main.knight_dict, main.knight_skills)
             ]
             _mobs = [
-                hero.Mob('Charging Drunk A', hero.drunk_dict,
-                         hero.drunk_skills),
-                hero.Mob('Charging Drunk B', hero.drunk_dict,
-                         hero.drunk_skills),
-                hero.Mob('Crazed Bartender', hero.bartender_dict,
-                         hero.bartender_skills)
+                hero.Mob('Charging Drunk A', main.drunk_dict,
+                         main.drunk_skills),
+                hero.Mob('Charging Drunk B', main.drunk_dict,
+                         main.drunk_skills),
+                hero.Mob('Crazed Bartender', main.bartender_dict,
+                         main.bartender_skills)
             ]
             if battle.Battle(_heroes, _mobs).battle_loop():
                 wins += 1
