@@ -1,0 +1,290 @@
+Rules Flow
+==========
+
+1. A battle is made of 2 teams: Your team and the mobs.
+2. The battle is a succession of turns until all the units of one team
+   are dead.
+3. A unit is considered dead if its HP reaches 0.
+
+Turn Sequence
+-------------
+
+1. At the beginning of the turn each unit from your team announces
+   which Ability it will use this turn. This is called an
+   **Intention**.
+2. You pick a combo of 1 to 3 units from your team.
+3. Each unit from your combo and each unit from the mobs team will
+   then be added to the Turn Sequence.
+4. The Turn Sequence is ordered.
+5. Each unit in the Turn Sequence execute their ability
+6. End of Turn
+
+Note that when a unit executes its ability, it picks its targets by
+itself and there's nothing you can do to (directly) influence their
+target selection.
+
+Selecting your Combo
+--------------------
+
+Before selecting your combo, the game will display the current state
+of the battle, showing units, their HP/MP and their Intention for the
+turn.
+
+It will then display the name and HP of the mobs.
+
+Here's an example of display:
+
+```
+------------------------------------------------------------------------------------------
+# NAME                     HIT POINTS             MANA POINTS          CHOICE
+
+1 wizard           121/700 ▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ - ▰▱▱▱▱▱▱▱▱▱ 20/120    ATTACK
+2 cleric           248/750 ▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱ - ▰▰▰▰▰▰▰▰▰▰ 70/70     WellIntentionedWish
+4 ninja            448/850 ▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱ - ▰▰▰▰▰▰▰▰▰▰ 100/100   BootyTrap
+5 knight         1100/1100 ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰ - ▰▰▰▰▰▰▰▰▰▱ 90/100    ATTACK
+
+Crazed Bartender 1228/2000 ▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱
+------------------------------------------------------------------------------------------
+
+Pick your combo>
+```
+
+You pick units by inputing their number. For example, if you wished to
+pick wizard and ninja this turn, you'd enter the string `14`.
+
+Some notes:
+
+* the order doesn't matter. `14` and `41` are equivalent.
+* remember you can select 1, 2 or 3 units per turn.
+
+
+Turn Sequence
+-------------
+
+After selecting your combo, chosen untis and enemies will execute
+their ability in a semi-random order. While the order is unpredictable
+it heavily favors high SPD units to go earlier in the turn.
+
+Here's an example of a Turn Sequence:
+
+```
+monk: throws a pebble at Shieldmaiden dealing 85 dmg. (2500 -> 2415)
+Shieldmaiden: [Clashing and Slashing] on monk dealing 90 dmg. (650 -> 560)
+Shieldmaiden: [Clashing and Slashing] on ninja dealing 100 dmg. (850 -> 750)
+Shieldmaiden: [Clashing and Slashing] on knight dealing 66 dmg. (1100 -> 1034)
+ninja: punches Shieldmaiden dealing 48 dmg. (2415 -> 2367)
+knight: throws a pebble at Shieldmaiden dealing 65 dmg. (2367 -> 2302)
+```
+
+
+MP rules
+--------
+
+* MP is the resource consumed to cast active abilities.
+* A unit can only cast an active ability if its MP bar is currently
+  full.
+* As a unit casts its active ability, it removes its MP cost from the
+  current MP.
+* At the beginning of the turn, if a unit's current MP is lower than
+  its max MP, the unit will only choose ATTACK.
+* At the beginning of the turn, if a unit's current MP is equal to its
+  max MP, the unit will choose one of its active abilities.
+
+There are 4 ways of gaining MP:
+
+* Each unit in your team gains 20 MP per turn every turn.
+* **When executing an ATTACK ability on an enemy**, the unit will restore
+  an amount of MP proportional to the damage dealt. _(capped at 30MP)_
+* **When receiving an ATTACK ability from an enemy**, the unit will
+  restore an amount of MP proportional to the damage dealt. _(capped
+  at 60MP)_
+* Some active abilities (like the Paladin's [Well Delivered Speech])
+  will restore MP to allies.
+
+Units stats
+-----------
+
+Each unit has the following stats:
+
+* **HP**: The amount of hit points a unit has. It can never go over
+  its initial value. When it reaches zero the unit is considered dead,
+  and cannot participate in the battle.
+* **MP**: The amount of resources necessary to cast an active
+  ability. It starts the fight at 0.
+* **ATK**: Determines the damage output of physical damage (ATTACK and
+  some active abilities)
+* **MAG**: Determines the damage output of magical damage (some active
+  abilities).
+* **DEF**: Determines the damage mitigation against physical damage.
+* **SPR**: _(spirit)_ Determines the damage mitigation against magical
+  damage. It also influences the healing potency of restorative
+  spells.
+* **SPD**: Increases the odds of acting early in the turn.
+
+Your party
+----------
+
+Here're the heroes available in chapter 1.
+
+```
+wizard
+-------
+
+                                          .*((/
+                       .**,             /(,   /(       HP: ▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱
+                     ,(((((/*         /(.      ,(      MP: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+                ((#%%%%%%%%%#((##     .(*  */,,(*     ATK: ▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱
+                 /%%%*,,,,*%%%#.       .(,            MAG: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+                   (%%,..,%%(           ,(            DEF: ▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱
+                *%%%##((((##%%#.        (*            SPR: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱
+      .        *%%%%%#%#%%#%%%%%       ,(.            SPD: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱
+    ,**       .%%%%%%%(((#%%%%%%.      ,(/
+     /.     ./########/,,/########*..   *(.
+    .,,**##########(((####(((##########**/,
+       #%%%######%%((((((((//(########%%#(.
+       /%%###/,%%///(((((((///%%  *###%#(*            Abilities
+        (%/   %%////*(####(/((%%(     ((/             ---------
+             .%%%#(/*(#####/((#%%,    ,(.             * [Supernova Blast] (120MP) deals magical damage to all enemies.
+             #%%%((((######((((%%%     /(
+            .%%%(((/(######((((#%%/    .(*            * [Gravity] (120MP) deals magical damage to one enemy proportional
+            #%%%(((/#######(/(((%%%.    //                                to their current HP
+           .%%%((((/########/(((#%%(    *(.
+           (%%%(((((########/((((%%&.   *(,
+          ,%%%((((/(########/(((((%%/   *(/
+          #%%%((((((/(###(//((((((%%%.  *((
+         *((((((((((((///((((((((((##/  ,((.
+            ,((((((((((((((((((((((.    ,((.
+                .*///*.   ,////,         ..
+
+
+cleric
+------
+
+                                         @@@
+                                          ,           HP: ▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱
+                          @@           @@ , @@        MP: ▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱
+                         @@*@@        @, @, @@       ATK: ▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱
+                         @@,@@          @@,@         MAG: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱
+                        @,,,,,@        @@@,@@        DEF: ▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱
+                       @/,,,,**          @,@         SPR: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+                     ,***,   *,**,        ,          SPD: ▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱
+                   ,***************@      @
+   @@             ******************,     @
+     @******,    @@@@,**********,,@@@@@@,@@
+        @,,,*,@@@@@@@@,,,,,,,,,,@@@@@@@/,,@@         Abilities
+          @//*@@@@@@@@@ @@@     @@@@@@,//*@          ---------
+          @//*@@@@@*/*@  @@@@@  ,** @@@*/*@          * [Prayer to the Gods](100MP) restores HP and MP to a single ally.
+           ,*@    *//,@@@,***@   ,/,      @
+                 @//*@@@ ,***@@   ,/      @          * [Eternal Life](100MP) brings an ally back from death
+                 *//,@@@ ****,@   @,*     @
+                @//*@@@@ ****, @  @*/@    @
+                *//,@@@@@***** @   *//    @
+               *//*@@@@@@***** @@@@@*/,   @
+              ,///,@@@@@,*****@@@@@@*//   @
+             *///*@@@@@ ******@ @@@@@///@ @
+              ,//,@@@@@@ ****, @@@@@@**,  @
+                 @@@@@@@@@ @ @@@@@@@@@    ,
+                   @@@@@@@@@@@@@@@@@@     ,
+                     *,@
+
+
+barbarian
+---------
+
+
+                    #%#%%#%#                           HP: ▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱
+                   &%(*****%/                          MP: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+                  .&%#****/%(                         ATK: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+              ....*%&#////(%%#             *,   .     MAG: ▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱
+             ./,...**(****/(,***,         ,*,,,,.     DEF: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱
+           .,....,******.********,       .,,,,,,      SPR: ▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱
+          ...********************,       (.  ..       SPD: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+            .*****//**************      /*
+             ***, ****/*/*/***,*/##%#(****
+            ,***   **,****/,,,  ,*,,..,(,             Abilities
+            (##/  ,*((**.,,(**/       #/              ---------
+            ,%## *#%%#%%.,&%%%%*     ((               * [Wrath of Nature] (100MP) Deals massive physical damage to one enemy
+             (/*.%%%%%%%%%%%%%%(
+              ***(%%%%%%%%%%%%%%,                     * [Berserker Rage] (passive) Greatly increases ATK and DEF when HP drops
+                #%%%%%%%%%%%%%%%,                                                  below 30%
+                #%%%%%##(*(%%%%%.
+                 (/%/******** ,.
+                    ,*/*,**/*
+                    *********.
+                    ****,****
+                    %%%#,%%%*
+                    (#%(.###.
+                    (##*,##(
+                   ,***. ***,
+                ,*,*,      .***,
+
+
+
+
+
+ninja
+-----
+
+                    /###,                            Stats
+                    /###,                            ------
+                  ,#&,,(%#                            HP: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱
+                  *#%@@&%#.                           MP: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱
+                  *#%#%#%#                           ATK: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱
+               /@@&#%,,(%#@@@                        MAG: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱
+               #%@@%%&/@#&@@/                        DEF: ▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱
+              *%,@@&@@@@&@@%,,                       SPR: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱
+              &,. %@@@@@@@*.&*.                      SPD: ▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱
+              &,. %@@@@@@@*.&*.
+            *@#.  (@&@@@%(. .@&@
+           .@@@/ .@(((((((%  @@@%
+           #@@* .@@@@@@@@@@%  %@@.                   Abilities
+          ,@@%  @@@@@@%@@@@@#  @@@                   ----------
+         **,,,  %&((/(%(((/(.  &,,/.                 * [Marked For Death] (100MP) Decrease DEF and SPR to one enemy.
+          (#(*  *@((((&(((((   (%(
+          (.     @#(((&((((*     @,                  * [Ninja Trap] (100MP) Deals a random amount of damage to an enemy.
+         #.      /@(((&((((       %
+         .        &%((%(((,        *
+                  %@@(%#@@*
+                 .@@@@@@@@@
+                  %@@@@@@@,
+                   @@@@@@@
+                   /@@@@@
+                   *@@@@@
+                   /@@@@@
+           ,/#%@@@@@@@@@@@@@@@%(*.
+
+
+paladin
+-------
+
+                .     ..      .
+                ....,,,,,,,...
+                   ,,,,,,,,.                          HP: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+                   ,,,,,,,,.                    ....  MP: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱
+               .,#(,,,,,,,,//.                 ...,. ATK: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱
+    ..        .,/#%%(*##*/%%%(,..             .....  MAG: ▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱
+    ......,,,,,...*#%%%%%%%%/.......         ....    DEF: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+     ....         .....,.....,*,....        ....     SPR: ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱
+     ..                ....,,..(%.         ....      SPD: ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱
+     ,.       .   .     .,,,...%#/        ..,.
+     .     .......     .,,....*%%#(/.    .,,.
+     .   ...........   .,* .../(//////,..,,..
+     ..   ........    .,/*****/%%#,*/////((*         Abilities
+      ..      .      .*//****,,%%%*   .,,,           ---------
+       ..         ..,**,,, ..../%%%                  * [Chivalrous Protection] (100MP) Increases DEF and SPR to all allies.
+        ..      .,,.,,,,,,......#%%#
+        ./....,,,,. ,,,,,,......,%%%*                * [Well Delivered Speech] (100MP) Restores MP to some allies.
+        (%%%%(,.....,,,,,,, .....(%%%
+       ,%%%%%..... .,,,,,,, .....,%%%(
+       /%%%%*..... ,,,,,,,, ......(%%%,
+      .#%%%(...... ,,,,,,,, ......,%%%/
+      .%%%%,...... .,,,,,,. ......./%%#
+      ,%%%/.......* .,,,,..*.......,%%%.
+      *%%%%#,....*//. ,,.,(%,..../%%%%%*
+      #%%%%%%%%(/%///* .//(%%#%%%%%%%%%/
+     ,%%%%%%%%%%%#////////#%%%%%%%%%%%%#
+    .#%%%%%%%#/, ,///////*   .*#%%%%%%%%,
+                 /////////*.
+              */////*..*///////*
+           ,/*,.
+```
