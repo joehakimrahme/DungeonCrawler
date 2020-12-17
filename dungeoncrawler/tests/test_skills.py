@@ -189,6 +189,30 @@ class BurstingQiTest(unittest.TestCase):
         self.assertGreater(self.team[0].DEF, _olddef)
 
 
+class ChivalrousProtectionTest(unittest.TestCase):
+    def setUp(self):
+        self.team = [
+            utils.create_neutral_fighter(),
+            utils.create_neutral_fighter()
+        ]
+        self.team[1].hp = 0  # one dead character
+        self.ability = skills.ChivalrousProtection
+
+    @patch('dungeoncrawler.utils.slow_type')
+    def test_chivalrousprotection_effect(self, slow_type):
+        world = mock.Mock()
+        world.yourteam = self.team
+        _olddef = [f.DEF for f in self.team]
+        _oldspr = [f.SPR for f in self.team]
+        self.ability(world, self.team[0]).effect(self.team)
+        # team[0] has their stats increased
+        self.assertLess(_olddef[0], self.team[0].DEF)
+        self.assertLess(_oldspr[0], self.team[0].SPR)
+        # self.team[1] hasn't been touched (because dead)
+        self.assertEqual(_olddef[1], self.team[1].DEF)
+        self.assertEqual(_oldspr[1], self.team[1].SPR)
+
+
 class BubblyPickMeUpTest(unittest.TestCase):
     def setUp(self):
         self.fighters = [

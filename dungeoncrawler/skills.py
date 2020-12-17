@@ -50,7 +50,14 @@ class Ability(abc.ABC):
         raise NotImplementedError
 
     def log_skill(self, amount, target, old_value, new_value):
-        raise NotImplementedError
+        utils.slow_type(
+            "%s: [%s] on %s dealing %s dmg"
+            ". (%d -> %d)\n" % (
+                utils.bold(utils.color_green(self.caster.name)),
+                utils.color_yellow(str(self)),
+                utils.bold(target.name),
+                utils.bold(str(amount)),
+                old_value, new_value))
 
     def opening_words(self):
         pass
@@ -104,7 +111,6 @@ class ATTACK(Ability):
         return (dmg, _oldt, target.hp)
 
     def log_skill(self, amount, target, old_value, new_value):
-        # coloring
         if self.caster in self.world.yourteam:
             color = utils.color_green
         else:
@@ -131,7 +137,7 @@ class ATTACK(Ability):
         utils.slow_type("%s: %s %s dealing %s dmg. (%d -> %d)\n" % (
             utils.bold(color(self.caster.name)),
             random.choice(description),
-            target.name, utils.bold(str(amount)),
+            utils.bold(target.name), utils.bold(str(amount)),
             old_value, new_value))
 
 
@@ -163,7 +169,8 @@ class WellIntentionedWish(Ability):
         utils.slow_type("%s: [%s] on %s for %s HP. (%d -> %d)\n" % (
             utils.bold(utils.color_green(self.caster.name)),
             utils.color_yellow(str(self)),
-            target.name, utils.bold(str(amount)), old_value, new_value))
+            utils.bold(target.name),
+            utils.bold(str(amount)), old_value, new_value))
 
 
 class WellIntentionedWish2(WellIntentionedWish):
@@ -194,15 +201,6 @@ class ThousandFists(Ability):
         target.hp -= dmg
         return (dmg, _oldt, target.hp)
 
-    def log_skill(self, amount, target, old_value, new_value):
-        utils.slow_type(
-            "%s: [%s] on %s dealing %s dmg"
-            ". (%d -> %d)\n" % (
-                utils.bold(utils.color_green(self.caster.name)),
-                utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)),
-                old_value, new_value))
-
 
 class SilentPrayer(Ability):
     mp_cost = 70
@@ -226,7 +224,7 @@ class SilentPrayer(Ability):
         utils.slow_type(
             "%s: [%s] on %s restoring full MP.\n" % (
                 utils.bold(utils.color_green(self.caster.name)),
-                utils.color_yellow(str(self)), target.name))
+                utils.color_yellow(str(self)), utils.bold(target.name)))
 
 
 class NovaBlast(Ability):
@@ -253,14 +251,6 @@ class NovaBlast(Ability):
         _oldt = target.hp
         target.hp -= dmg
         return (dmg, _oldt, target.hp)
-
-    def log_skill(self, amount, target, old_value, new_value):
-        utils.slow_type(
-            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                utils.bold(utils.color_green(self.caster.name)),
-                utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)),
-                old_value, target.hp))
 
 
 class Focus(Ability):
@@ -295,13 +285,13 @@ class BurstingQi(Ability):
 
     def log_skill(self, amount, target, old_value, new_value):
         utils.slow_type(
-            "%s: [%s] on self increase ATK and DEF.\n" % (
+            "%s: [%s] on self increasing ATK/DEF.\n" % (
                 utils.bold(utils.color_green(self.caster.name)),
                 utils.color_yellow(str(self))))
 
 
 class CuriousBox(Ability):
-    mp_cost = 100
+    mp_cost = 10
     name = "Curious Box"
 
     def targets(self, combo):
@@ -322,14 +312,6 @@ class CuriousBox(Ability):
         _oldt = target.hp
         target.hp -= dmg
         return (dmg, _oldt, target.hp)
-
-    def log_skill(self, amount, target, old_value, new_value):
-        utils.slow_type(
-            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                utils.bold(utils.color_green(self.caster.name)),
-                utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)),
-                old_value, new_value))
 
 
 class BootyTrap(Ability):
@@ -354,10 +336,10 @@ class BootyTrap(Ability):
             "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
                 utils.bold(utils.color_green(self.caster.name)),
                 utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)),
+                utils.bold(target.name), utils.bold(str(amount)),
                 old_value, target.hp))
         utils.slow_type(
-            "%s: [%s] on %s decreases DEF/SPR.\n" % (
+            "%s: [%s] on %s decreasing DEF/SPR.\n" % (
                 utils.bold(utils.color_green(self.caster.name)),
                 utils.color_yellow(str(self)), target.name))
 
@@ -367,7 +349,7 @@ class ChivalrousProtection(Ability):
     name = "Chivalrous Protection"
 
     def targets(self, combo):
-        return self.world.yourteam
+        return [m for m in self.world.yourteam if m.hp]
 
     def single_effect(self, target):
         target.DEF *= 1.8
@@ -376,7 +358,7 @@ class ChivalrousProtection(Ability):
 
     def log_skill(self, amount, target, old_value, new_value):
         utils.slow_type(
-            "%s: [%s] on %s increases DEF/SPR.\n" % (
+            "%s: [%s] on %s increasing DEF/SPR.\n" % (
                 utils.bold(utils.color_green(self.caster.name)),
                 utils.color_yellow(str(self)), target.name))
 
@@ -396,7 +378,8 @@ class RighteousInspiration(Ability):
         utils.slow_type(
             "%s: [%s] on %s restoring MP.\n" % (
                 utils.bold(utils.color_green(self.caster.name)),
-                utils.color_yellow(str(self)), target.name))
+                utils.color_yellow(str(self)),
+                utils.bold(target.name)))
 
 
 class BubblyPickMeUp(Ability):
@@ -419,7 +402,8 @@ class BubblyPickMeUp(Ability):
             "%s: [%s] on %s healing for %s. (%d -> %d)\n" % (
                 utils.bold(utils.color_red(self.caster.name)),
                 utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)), old_value, new_value))
+                utils.bold(target.name),
+                utils.bold(str(amount)), old_value, new_value))
 
 
 class TemporaryInsanity(Ability):
@@ -438,7 +422,8 @@ class TemporaryInsanity(Ability):
     def log_skill(self, amount, target, old_value, new_value):
         utils.slow_type("%s: [%s] on %s increases ATK.\n" % (
             utils.bold(utils.color_red(self.caster.name)),
-            utils.color_yellow(str(self)), target.name))
+            utils.color_yellow(str(self)),
+            utils.bold(target.name)))
 
 
 class AngryOwner(Ability):
@@ -469,10 +454,12 @@ class AngryOwner(Ability):
 
     def log_skill(self, amount, target, old_value, new_value):
         utils.slow_type(
-            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
+            "%s: [%s] on %s dealing %s dmg"
+            ". (%d -> %d)\n" % (
                 utils.bold(utils.color_red(self.caster.name)),
                 utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)),
+                utils.bold(target.name),
+                utils.bold(str(amount)),
                 old_value, new_value))
 
 
@@ -499,14 +486,6 @@ class LieDownAndBleed(Ability):
         target.hp -= dmg
         return (dmg, _oldt, target.hp)
 
-    def log_skill(self, amount, target, old_value, new_value):
-        utils.slow_type(
-            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                utils.bold(utils.color_red(self.caster.name)),
-                utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)),
-                old_value, new_value))
-
 
 class ClashingAndSlashing(Ability):
     name = "Clashing and Slashing"
@@ -523,14 +502,6 @@ class ClashingAndSlashing(Ability):
 
     def single_effect(self, target):
         return ATTACK(self.world, self.caster).single_effect(target)
-
-    def log_skill(self, amount, target, old_value, new_value):
-        utils.slow_type(
-            "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
-                utils.bold(utils.color_red(self.caster.name)),
-                utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)),
-                old_value, new_value))
 
 
 class FullOfZeal(Ability):
@@ -560,7 +531,8 @@ class FullOfZeal(Ability):
             "%s: [%s] on %s dealing %s dmg. (%d -> %d)\n" % (
                 utils.bold(utils.color_red(self.caster.name)),
                 utils.color_yellow(str(self)),
-                target.name, utils.bold(str(amount)),
+                utils.bold(target.name),
+                utils.bold(str(amount)),
                 old_value, new_value))
         utils.slow_type(
             "%s: [%s] increases self SPD.\n" % (
@@ -592,5 +564,5 @@ class BoastfulNoMore(Ability):
         utils.slow_type(
             "%s: [%s] absorbed mp of %s\n" % (
                 utils.bold(utils.color_red(self.caster.name)),
-                utils.color_yellow(str(self)), target.name
-            ))
+                utils.color_yellow(str(self)),
+                utils.bold(target.name)))

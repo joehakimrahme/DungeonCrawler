@@ -170,7 +170,6 @@ You dead. You lose. Try to do better next time.
                     self.enemyteam.remove(mob)
 
     def battle_loop(self):
-        utils.slow_type(self.intro)
         # Execute start-of-battle
         while True:
             win = self.check_for_win()
