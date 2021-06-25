@@ -58,19 +58,16 @@ def bold(msg):
 
 
 def slow_type(t):
-    """Simluates a human typing effect.
+    """Simulates a human typing effect.
 
      taken from https://stackoverflow.com/q/4099422/403401
 
     """
     typing_speed = 180
+    interval = 10
     for letter in t:
         sys.stdout.write(letter)
         sys.stdout.flush()
-        if letter in ". ":
-            interval = 10
-        else:
-            interval = 10
         time.sleep(random.random() * interval / typing_speed)
 
 

@@ -30,11 +30,14 @@ At the beginning of the turn your party announces what they chose to
 do this turn, and displays it like this:
 
 ```
-1 wizard, 373/400, 46/100, ATTACK
-2 cleric, 379/450, 100/120, Heal
-3 monk, 420/650, 120/120, BurstingQi
-4 ninja, 850/850, 74/100, ATTACK
-5 knight, 1100/1100, 80/80, Righteous Inspiration
+------------------------------------------------------------------------------------------
+# NAME                     HIT POINTS             MANA POINTS          CHOICE
+
+1 wizard           297/700 ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ - ▰▰▰▰▰▰▰▱▱▱ 84/120    ATTACK
+2 cleric           750/750 ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰ - ▰▰▰▰▰▰▰▰▰▰ 70/70     Wishful Intention
+3 monk             542/650 ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱ - ▰▰▰▰▰▱▱▱▱▱ 60/120    ATTACK
+4 ninja            416/850 ▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱ - ▰▰▰▰▰▰▰▰▰▰ 100/100   Booty Trap
+5 knight         1100/1100 ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰ - ▰▰▰▰▰▰▰▰▰▰ 100/100   Righteous Inspiration
 ```
 
 Here we can see one line per party member, in the following format:
@@ -45,34 +48,37 @@ Here we can see one line per party member, in the following format:
 
 In other words, this turn, the `wizard` has:
 
-* 373HP, 400maxHP
-* 46MP, 100maxMP
+* 297 HP, 700 maxHP
+* 84 MP, 120 maxMP
 * Declared ATTACK as a choice
 
 The beginning of turn screen will also display the current state of
 the enemy party:
 
 ```
-
-HellHoundA 156/750
-HellHoundB 714/750
-BeastMaster 1500/1500
+Charging Drunk A   269/900 ▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱
+Charging Drunk B   136/900 ▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱
+Crazed Bartender 1713/2000 ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱
 ```
 
 The game will then ask you to input a combo:
 
 ```
-Pick your combo>
+[5] Pick your combo>
 ```
 
 A **combo** is a group of 1, 2 or 3 heroes that will take action this
 turn. The action they take consist of the **choice** they announced at
 the beginning of the turn.
 
-You select the heroes by giving their number. In the example above, if
-you want to combo wizard/ATTACK + monk/BurstingQi +
-knight/RighteousIndignation, you would input `135`. (the order doesn't
-matter, it could've well been `513`, wouldn't make a difference.)
+You select the heroes by giving their number. In the example above,
+the combo `345` will pick:
+
+* monk/ATTACK
+* ninja/Booty Trap
+* knight/Righteous Inspiration
+
+Note that the order won't matter, so `345` and `435` are equivalent.
 
 Once the combo is selected, the **turn resolution**, each unit in your
 combo, as well each mob in the enemy party, will be added to the
@@ -94,16 +100,14 @@ As units execute their turns, the game will display what's being
 modified. Like this:
 
 ```
-monk: THOUSAND FISTS HellHoundB for 768 damage. (714 -> 0)
-HellHoundA: ATTACK monk for 115 damage. (535 -> 420)
-BeastMaster: NIGHT CALL heals HellHoundA for 150. (156 -> 306)
-BeastMaster: NIGHT CALL heals BeastMaster for 150. (1500 -> 1500)
-joker: ATTACK HellHoundA for 196 damage. (306 -> 110)
-knight: RIGHTEOUS INSPIRATION restored MP of wizard
-knight: RIGHTEOUS INSPIRATION restored MP of cleric
-knight: RIGHTEOUS INSPIRATION restored MP of monk
-knight: RIGHTEOUS INSPIRATION restored MP of joker
-knight: RIGHTEOUS INSPIRATION restored MP of knight
+Charging Drunk A: injures wizard dealing 272 dmg. (297 -> 25)
+Charging Drunk B: injures wizard dealing 272 dmg. (25 -> 0)
+ninja: [Booty Trap] on Charging Drunk A dealing 173 dmg. (269 -> 96)
+ninja: [Booty Trap] on Charging Drunk A decreasing DEF/SPR.
+cleric: [Wishful Intention] on ninja for 346 HP. (416 -> 762)
+Crazed Bartender: [Bubbly Pick-me-up] on Charging Drunk A healing for 100. (96 -> 196)
+Crazed Bartender: [Bubbly Pick-me-up] on Charging Drunk B healing for 100. (136 -> 236)
+Crazed Bartender: [Bubbly Pick-me-up] on Crazed Bartender healing for 100. (1713 -> 1813)
 ```
 
 
@@ -131,60 +135,20 @@ and passively each turn, however there are ways to boost the regen:
   restore MP to the party.
 
 
-Hero Stats
-----------
-
-Every unit has the following stats:
-
-* maxHP: Hit Points indicate how healthy a hero is. Once it reaches
-  zero, the unit dies.
-* maxMP: Mana Points indicate the resources needed to cast an
-  ability. When MP raches maxMP, the unit stops attacking and starts
-  casting abilities.
-* ATK: determines the physical damage of ATTACKs and other physical
-  abilities.
-* DEF: determines the physical damage reduction received from physical abilities.
-* MAG: determines the magical damage of some abilities.
-* SPR: (spirit) determines the magical damage reduction received from magical
-  abilities.
-* SPD: Determines the chance of a unit to act early in the turn.
-
-
 Heroes
 ------
 
-Here are the current heroes available:
+Here are the available heroes:
 
-* wizard: Fragile but very powerful, the wizard is a typical glass
-  cannon. His defensive stats are horrible, but the damage potential
-  from his abilities is very high.
-* wizard ability #1, **Nova Blast**: A big explosion that deals
-  massive magic damage to all enemies.
-* wizard ability #2, **Focus**: Increases own MAG.
+| description             | hero   | ability #1                                                 | ability #2                                                     |
+|-------------------------|--------|------------------------------------------------------------|----------------------------------------------------------------|
+| glass cannon dps        | wizard | **Nova Blast**: AoE damage                                 | **Focus**: Buff self MAG/SPD                                   |
+| healer of the party     | cleric | **Heal**: restores mp to one ally                          | **Silent Prayer**: fill mp gauge for one ally                  |
+| durable dps             | monk   | **Thousand Fists**: massive single target damage           | **Burning Qi**: buff self ATK/DEF                              |
+| unpredictable trickster | ninja  | **Curious Box**: deal random damage to random enemies      | **Booty Trap**: single target damage + DEF/SPR debuff          |
+| durable support         | knight | **Chivalrous Protection**: buff DEF/SPR to the whole party | **Righteous Inspiration**: restores some MP to the whole party |
+|-------------------------|--------|------------------------------------------------------------|----------------------------------------------------------------|
 
-* cleric: The white mage of the party, the cleric's role is to provide
-  sustain to your party.
-* cleric ability #1 **Heal**, as its name suggests, restore HP to an
-  ally.
-* cleric ability #2 **Silent Prayer** fill the MP gauge of an ally.
-
-* monk: The brawler of the group, he excells at providing sustainable
-  physical damage.
-* monk ability #1, **Thousand Fists**: deal massive physical damage to
-  a single target.
-* monk ability #2, **BurningQi**: increases own ATK.
-
-* ninja: A wildcard with solid defensive stats and unpredictable behavior.
-* ninja ability #1, **Curious Box**: Deal a random amount of damage to
-  a random amount of enemies.
-* ninja ability #2, **Booty Trap**: Deals a small amount of damage to
-  an enemy as well as reducing their DEF and SPR.
-
-* knight, A tanky support, who makes the rest of his team stronger.
-* knight ability #1, **Chivalrous Protection** increases the DEF and
-  SPR of the whole party
-* knight ability #2, **Righteous Inspiration** restores some MP to the
-  whole party.
 
 
 Quickstart
