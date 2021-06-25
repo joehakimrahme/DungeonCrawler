@@ -61,6 +61,8 @@ Charging Drunk B   136/900 ▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱�
 Crazed Bartender 1713/2000 ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱
 ```
 
+Notice how the enemies don't announce their choices.
+
 The game will then ask you to input a combo:
 
 ```
@@ -80,21 +82,20 @@ the combo `345` will pick:
 
 Note that the order won't matter, so `345` and `435` are equivalent.
 
-Once the combo is selected, the **turn resolution**, each unit in your
-combo, as well each mob in the enemy party, will be added to the
-**turn order** list. This list will then be sorted
+Once the combo is selected, the **turn resolution** starts. Each unit
+in your combo, as well each mob in the enemy party, will be added to
+the **turn order** list. This list will then be sorted
 semi-randomly. Units with high SPD usually go first, however some
 units can be stubborn and it's usually not posisble to predict exactly
 the order of resolution.
 
-Then going through the **turn order** list, every unit will execute
+Then, going through the **turn order** list, every unit will execute
 their action. When taking its action, the unit **picks a target for
 itself**. You as a player have no say in who should be targeted.
 
 However, there is _some_ order to this madness, as units are (usually)
 consistent with their targetting decisions. The more you play with
-them, the more you'll learn to anticipate which enemies will be
-targeted by the ability.
+them, the more you'll learn to anticipate ability targets.
 
 As units execute their turns, the game will display what's being
 modified. Like this:
@@ -140,15 +141,13 @@ Heroes
 
 Here are the available heroes:
 
-| description             | hero   | ability #1                                                 | ability #2                                                     |
-|-------------------------|--------|------------------------------------------------------------|----------------------------------------------------------------|
-| glass cannon dps        | wizard | **Nova Blast**: AoE damage                                 | **Focus**: Buff self MAG/SPD                                   |
-| healer of the party     | cleric | **Heal**: restores mp to one ally                          | **Silent Prayer**: fill mp gauge for one ally                  |
-| durable dps             | monk   | **Thousand Fists**: massive single target damage           | **Burning Qi**: buff self ATK/DEF                              |
-| unpredictable trickster | ninja  | **Curious Box**: deal random damage to random enemies      | **Booty Trap**: single target damage + DEF/SPR debuff          |
-| durable support         | knight | **Chivalrous Protection**: buff DEF/SPR to the whole party | **Righteous Inspiration**: restores some MP to the whole party |
-|-------------------------|--------|------------------------------------------------------------|----------------------------------------------------------------|
-
+| hero   | description             | ability #1                                                 | ability #2                                                     |
+|--------|-------------------------|------------------------------------------------------------|----------------------------------------------------------------|
+| wizard | glass cannon dps        | **Nova Blast**: AoE damage                                 | **Focus**: Buff self MAG/SPD                                   |
+| cleric | healer of the party     | **Heal**: restores mp to one ally                          | **Silent Prayer**: fill mp gauge for one ally                  |
+| monk   | durable dps             | **Thousand Fists**: massive single target damage           | **Burning Qi**: buff self ATK/DEF                              |
+| ninja  | unpredictable trickster | **Curious Box**: deal random damage to random enemies      | **Booty Trap**: single target damage + DEF/SPR debuff          |
+| knight | durable support         | **Chivalrous Protection**: buff DEF/SPR to the whole party | **Righteous Inspiration**: restores some MP to the whole party |
 
 
 Quickstart
